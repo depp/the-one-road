@@ -31,7 +31,7 @@ function Font(imgname, descname) {
     this.descname = descname;
 }
 
-Font.prototype.drawLine = function(x, y, text) {
+Font.prototype.drawLine = function(x, y, text, scale) {
     var img = font_images[this.imgname];
     var desc = font_desc[this.descname];
     if (img === null || desc === null)
@@ -47,14 +47,15 @@ Font.prototype.drawLine = function(x, y, text) {
 	    continue;
 	var g = charmap[c];
 	if (kern && g in kern)
-	    xpos += kern[g];
+	    xpos += kern[g] * scale;
 	var gd = glyphs[g];
 	if (gd[3]) {
 	    var b = gd[4];
-	    cxt.drawImage(img, gd[0], gd[1], gd[2], gd[3],
-			  xpos, y - gd[4], gd[2], gd[3])
+	    cxt.drawImage(
+		img, gd[0], gd[1], gd[2], gd[3],
+		xpos, y - gd[4] * scale, gd[2] * scale, gd[3] * scale)
 	}
 	kern = gd[5];
-	xpos += gd[2] + 1;
+	xpos += (gd[2] + 1) * scale;
     }
 }
