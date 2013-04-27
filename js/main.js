@@ -2,6 +2,7 @@ var main = {};
 
 function initGame() {
     var scripts = [
+	'font',
 	'battlescreen'
     ];
     var count = scripts.length;
