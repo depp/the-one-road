@@ -7,7 +7,6 @@ BSSprite.prototype.draw = function(bs, x, y) {
 
 function BSText(text) {
     this.text = text;
-    console.log('new');
 }
 BSText.prototype.draw = function(bs, x, y) {
     bs.font_small.drawLine(x, y, this.text, 1);
@@ -45,7 +44,11 @@ function BattleScreen() {
 	'stat': {
 	    'sprite': null,
 	    'layer': 1
-	}
+	},
+	'effect': {
+	    'sprite': null,
+	    'layer': 1
+	},
     };
 }
 
@@ -157,10 +160,57 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     )
 }
 
+BattleScreen.prototype.do_spell = function(actor, target) {
+    var apos = this.sprite[actor].pos;
+    var tpos = this.sprite[target].pos;
+    var spos = [apos[0], apos[1]]
+    var fpos = [tpos[0], tpos[1]]
+    if (apos[0] < tpos[0])
+	spos[0] += 16;
+    else
+	spos[0] -= 16;
+    this.animate(
+	function(frame) {
+	    if (!this.sprite.effect.sprite)
+		this.sprite.effect.sprite = new BSSprite('fire_1');
+	    this.sprite.effect.pos = spos;
+	    return frame >= 10;
+	},
+	function(frame) {
+	    var t = frame / 15;
+	    t = battle_smooth(t*0.5) * 2.0;
+	    this.sprite.effect.pos = battle_interp(spos, fpos, t, 'linear');
+	    return frame >= 15;
+	},
+	function(frame) {
+	    this.sprite.effect.pos = fpos;
+	    this.sprite.effect.sprite.name = (
+		frame <= 5 ? 'fire_2' : 'fire_3');
+	    return frame >= 10;
+	},
+	function(frame) {
+	    this.sprite.effect.sprite = null;
+	    var t = frame > 5 ? 1 : frame / 5;
+	    if (!this.sprite.stat.sprite)
+		this.sprite.stat.sprite = new BSText('-50')
+	    this.sprite.stat.pos = [
+		tpos[0], tpos[1] - 12 * t];
+	    return frame >= 10;
+	},
+	function(frame) {
+	    this.sprite.stat.sprite = null;
+	    return true;
+	}
+    )
+}
+
 BattleScreen.prototype.act_attack = function() {
     this.do_attack('player', 'monster0');
 }
+
 BattleScreen.prototype.act_spell = function() {
+    this.do_spell('player', 'monster0');
 }
+
 BattleScreen.prototype.act_item = function() {
 }
