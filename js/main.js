@@ -69,17 +69,29 @@ main.stop = function() {
     main.intervalid = null;
 }
 
+var KEYS = {
+    '40': 'down',
+    '38': 'up',
+    '39': 'right',
+    '37': 'left',
+    '13': 'enter',
+    '32': 'enter',
+    '27': 'esc'
+}
+
 addEventListener('keydown', function (e) {
-    if (main.intervalid !== null) {
-	main.screen.keydown(e.keyCode);
+    var key = KEYS[e.keyCode];
+    if (main.intervalid !== null && key) {
+	main.screen.keydown(key);
 	e.preventDefault();
+	return false;
     }
-    return false;
 }, false)
 
 addEventListener('keyup', function (e) {
-    if (main.intervalid !== null) {
-	main.screen.keyup(e.keyCode);
+    var key = KEYS[e.keyCode];
+    if (main.intervalid !== null && key) {
+	main.screen.keyup(key);
 	e.preventDefault();
     }
     return false;

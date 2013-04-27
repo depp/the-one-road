@@ -26,13 +26,13 @@ Menu.prototype.draw = function() {
 
 Menu.prototype.keydown = function(code) {
     switch (code) {
-    case 40:
+    case 'down':
 	this.selected++;
 	if (this.selected >= this.items.length)
 	    this.selected = 0;
 	break;
 
-    case 38:
+    case 'up':
 	this.selected--;
 	if (this.selected < 0)
 	    this.selected = this.items.length - 1;
