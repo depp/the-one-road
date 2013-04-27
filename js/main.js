@@ -17,8 +17,8 @@ function initGame() {
 
 	main.canvas = document.createElement('canvas');
 	main.cxt = main.canvas.getContext('2d');
-	main.canvas.width = 1280;
-	main.canvas.height = 720;
+	main.canvas.width = 640;
+	main.canvas.height = 360;
 	document.body.appendChild(main.canvas);
 	main.screen = new BattleScreen();
 	main.intervalid = null;

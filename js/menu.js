@@ -11,21 +11,20 @@ function Menu(items, sprites, font, x, y, width) {
 
 Menu.prototype.draw = function() {
     this.sprites.drawBox(
-	this.x, this.y, this.width, 32 * (self.items.length + 1),
+	this.x, this.y, this.width, 16 * (self.items.length + 1),
 	16, 'Box', 1)
     for (var i = 0; i < this.items.length; i++) {
 	var item = this.items[i];
-	this.font.drawLine(this.x + 32, this.y + 16 + 32*i + 24,
-			   item.title, 2);
+	this.font.drawLine(this.x + 16, this.y + 8 + 16*i + 12,
+			   item.title, 1);
     }
     if (this.active) {
-	this.sprites.draw(this.x-4, this.y + 16 + this.selected * 32,
-			  'Hand', 2);
+	this.sprites.draw(this.x-2, this.y + 8 + this.selected * 16,
+			  'Hand', 1);
     }
 }
 
 Menu.prototype.keydown = function(code) {
-    console.log(code);
     switch (code) {
     case 40:
 	this.selected++;
