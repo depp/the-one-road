@@ -1,6 +1,22 @@
+function BSSprite(name) {
+    this.name = name;
+}
+BSSprite.prototype.draw = function(bs, x, y) {
+    bs.sprites.draw(x, y, this.name, 1);
+}
+
+function BSText(text) {
+    this.text = text;
+    console.log('new');
+}
+BSText.prototype.draw = function(bs, x, y) {
+    bs.font_small.drawLine(x, y, this.text, 1);
+}
+
 function BattleScreen() {
     this.frame = 0;
     this.font = new Font('font1', '7x9sharp');
+    this.font_small = new Font('font1', '5x7slant');
     this.sprites = new Sprites('sprites');
     items = [
 	{'title': 'Attack',
@@ -17,12 +33,18 @@ function BattleScreen() {
 
     this.sprite = {
 	'player': {
-	    'sprite': 'player_battle',
-	    'pos': [485, 195]
+	    'sprite': new BSSprite('player_battle'),
+	    'pos': [485, 195],
+	    'layer': 0
 	},
 	'monster0': {
-	    'sprite': 'gremlin',
-	    'pos': [82, 190]
+	    'sprite': new BSSprite('gremlin'),
+	    'pos': [82, 190],
+	    'layer': 0
+	},
+	'stat': {
+	    'sprite': null,
+	    'layer': 1
 	}
     };
 }
@@ -55,9 +77,12 @@ BattleScreen.prototype.draw = function() {
     var cxt = main.cxt;
     cxt.drawImage(self.background, 0, 0);
     this.menu.draw();
-    for (var name in this.sprite) {
-	var sp = this.sprite[name];
-	this.sprites.draw(sp.pos[0], sp.pos[1], sp.sprite, 1);
+    for (var i = 0; i < 2; i++) {
+	for (var name in this.sprite) {
+	    var sp = this.sprite[name];
+	    if (sp.layer == i && sp.sprite !== null)
+		sp.sprite.draw(this, sp.pos[0], sp.pos[1]);
+	}
     }
 }
 
@@ -73,7 +98,7 @@ function battle_smooth(t) {
 	return 0;
     if (t > 1)
 	return 1;
-    return 0.5 * (1 - Math.cos(t * math.PI));
+    return 0.5 * (1 - Math.cos(t * Math.PI));
 }
 
 function battle_dist(pos1, pos2) {
@@ -101,16 +126,31 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     var apos = this.sprite[actor].pos;
     var tpos = this.sprite[target].pos;
     var fpos = [
-	tpos[0] + (apos[0] < tpos[0] ? -48 : +48),
+	tpos[0] + (apos[0] < tpos[0] ? -40 : +40),
 	tpos[1]
     ]
     this.animate(
 	function(frame) {
 	    var t = frame / 15;
+	    t = battle_smooth(t);
 	    this.sprite[actor].pos = battle_interp(apos, fpos, t, 'jump');
 	    return frame >= 15;
 	},
 	function(frame) {
+	    var t = frame / 5;
+	    if (!this.sprite['stat'].sprite)
+		this.sprite['stat'].sprite = new BSText('-50')
+	    this.sprite['stat'].pos = [
+		tpos[0], tpos[1] - 12 * t];
+	    return frame >= 5;
+	},
+	function(frame) {
+	    var t = battle_smooth(frame / 5);
+	    this.sprite[actor].pos = battle_interp(fpos, apos, t, 'linear');
+	    return frame >= 5;
+	},
+	function(frame) {
+	    this.sprite['stat'].sprite = null;
 	    this.sprite[actor].pos = apos;
 	    return true;
 	}
