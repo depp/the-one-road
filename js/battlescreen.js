@@ -27,6 +27,7 @@ function BattleScreen() {
     ]
     this.menu = new Menu(this, items, this.sprites,
 			 this.font, 16, 16*17, 16*5);
+    this.show_menu = true;
     this.setBackground('mountain');
     this.animations = [];
     this.animation_queue = []
@@ -82,14 +83,14 @@ BattleScreen.prototype.update = function() {
 	    }
 	    this.animations = nanims;
 	    if (!nanims.length && this.animation_queue.length) {
-		this.animate(this.animation_queue.shift())
+		this.animate(false, this.animation_queue.shift())
 	    }
 	}
     }
 }
 
 BattleScreen.prototype.animate = function(queue, funcs) {
-    if (queue) {
+    if (queue && this.animations.length) {
 	this.animation_queue.push(funcs);
     } else {
 	this.animations.push({
@@ -99,10 +100,21 @@ BattleScreen.prototype.animate = function(queue, funcs) {
     }
 }
 
+BattleScreen.prototype.queue_func = function(func) {
+    funcs = [
+	function(frame) {
+	    func.call(this);
+	    return true;
+	}
+    ]
+    this.animate(true, funcs);
+}
+
 BattleScreen.prototype.draw = function() {
     var cxt = main.cxt;
     cxt.drawImage(self.background, 0, 0);
-    this.menu.draw();
+    if (this.show_menu)
+	this.menu.draw();
     for (var i = 0; i < 2; i++) {
 	for (var name in this.sprite) {
 	    var sp = this.sprite[name];
@@ -122,7 +134,7 @@ BattleScreen.prototype.draw = function() {
 }
 
 BattleScreen.prototype.keydown = function(code) {
-    if (this.menu && !this.animations.length)
+    if (this.show_menu && !this.animations.length)
 	this.menu.keydown(code);
 }
 
@@ -273,13 +285,22 @@ BattleScreen.prototype.do_item = function(actor) {
 BattleScreen.prototype.act_attack = function() {
     this.show_menu = false;
     this.do_attack('player', 'monster0');
+    this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_spell = function() {
     this.show_menu = false;
     this.do_spell('player', 'monster0');
+    this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_item = function() {
+    this.show_menu = false;
     this.do_item('player');
+    this.queue_func(this.monster_action);
+}
+
+BattleScreen.prototype.monster_action = function() {
+    this.do_attack('monster0', 'player');
+    this.animate(true, [function() { this.show_menu = true; return true; }]);
 }
