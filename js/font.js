@@ -32,6 +32,8 @@ function Font(imgname, descname) {
 }
 
 Font.prototype.drawLine = function(x, y, text, scale) {
+    x = Math.round(x);
+    y = Math.round(y);
     var img = font_images[this.imgname];
     var desc = font_desc[this.descname];
     if (img === null || desc === null)

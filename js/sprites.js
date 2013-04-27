@@ -31,6 +31,8 @@ function Sprites(name) {
 }
 
 Sprites.prototype.draw = function(x, y, name, scale) {
+    x = Math.round(x);
+    y = Math.round(y);
     var img = sprite_images[this.name];
     var desc = sprite_desc[this.name];
     if (img == null || desc == null)
@@ -43,6 +45,8 @@ Sprites.prototype.draw = function(x, y, name, scale) {
 }
 
 Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
+    x = Math.round(x);
+    y = Math.round(y);
     var img = sprite_images[this.name];
     var desc = sprite_desc[this.name];
     if (img == null || desc == null)

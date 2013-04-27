@@ -1,4 +1,5 @@
-function Menu(items, sprites, font, x, y, width) {
+function Menu(obj, items, sprites, font, x, y, width) {
+    this.obj = obj
     this.items = items;
     this.sprites = sprites;
     this.font = font;
@@ -36,6 +37,10 @@ Menu.prototype.keydown = function(code) {
 	this.selected--;
 	if (this.selected < 0)
 	    this.selected = this.items.length - 1;
+	break;
+
+    case 'enter':
+	this.obj[this.items[this.selected].action]();
 	break;
     }
 }
