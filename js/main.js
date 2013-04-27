@@ -39,7 +39,7 @@ function initGame() {
 main.gameLoop = function() {
     var now = Date.now();
     var delta = now - main.frametime;
-    var nframes = Math.floor(delta * (30 / 1000));
+    var nframes = Math.floor(delta * (60 / 1000));
     if (nframes <= 0) {
 	if (nframes < 0)
 	    main.frametime = now;
@@ -49,7 +49,7 @@ main.gameLoop = function() {
 	nframes = 10;
 	main.frametime = now;
     } else {
-	main.frametime += nframes / (30 / 1000);
+	main.frametime += nframes / (60 / 1000);
     }
     for (var i = 0; i < nframes; i++)
 	main.screen.update();
@@ -60,7 +60,7 @@ main.start = function() {
     if (main.intervalid !== null)
 	return;
     main.frametime = Date.now();
-    main.intervalid = setInterval(main.gameLoop, 10);
+    main.intervalid = setInterval(main.gameLoop, 5);
 }
 
 main.stop = function() {

@@ -134,23 +134,23 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     ]
     this.animate(
 	function(frame) {
-	    var t = frame / 15;
+	    var t = frame / 30;
 	    t = battle_smooth(t);
 	    this.sprite[actor].pos = battle_interp(apos, fpos, t, 'jump');
-	    return frame >= 15;
+	    return frame >= 30;
 	},
 	function(frame) {
-	    var t = frame / 5;
+	    var t = frame / 10;
 	    if (!this.sprite['stat'].sprite)
 		this.sprite['stat'].sprite = new BSText('-50')
 	    this.sprite['stat'].pos = [
 		tpos[0], tpos[1] - 12 * t];
-	    return frame >= 5;
+	    return frame >= 10;
 	},
 	function(frame) {
-	    var t = battle_smooth(frame / 5);
+	    var t = battle_smooth(frame / 10);
 	    this.sprite[actor].pos = battle_interp(fpos, apos, t, 'linear');
-	    return frame >= 5;
+	    return frame >= 10;
 	},
 	function(frame) {
 	    this.sprite['stat'].sprite = null;
@@ -174,28 +174,28 @@ BattleScreen.prototype.do_spell = function(actor, target) {
 	    if (!this.sprite.effect.sprite)
 		this.sprite.effect.sprite = new BSSprite('fire_1');
 	    this.sprite.effect.pos = spos;
-	    return frame >= 10;
+	    return frame >= 20;
 	},
 	function(frame) {
-	    var t = frame / 15;
+	    var t = frame / 30;
 	    t = battle_smooth(t*0.5) * 2.0;
 	    this.sprite.effect.pos = battle_interp(spos, fpos, t, 'linear');
-	    return frame >= 15;
+	    return frame >= 30;
 	},
 	function(frame) {
 	    this.sprite.effect.pos = fpos;
 	    this.sprite.effect.sprite.name = (
-		frame <= 5 ? 'fire_2' : 'fire_3');
-	    return frame >= 10;
+		frame <= 10 ? 'fire_2' : 'fire_3');
+	    return frame >= 20;
 	},
 	function(frame) {
 	    this.sprite.effect.sprite = null;
-	    var t = frame > 5 ? 1 : frame / 5;
+	    var t = frame > 10 ? 1 : frame / 10;
 	    if (!this.sprite.stat.sprite)
 		this.sprite.stat.sprite = new BSText('-50')
 	    this.sprite.stat.pos = [
 		tpos[0], tpos[1] - 12 * t];
-	    return frame >= 10;
+	    return frame >= 20;
 	},
 	function(frame) {
 	    this.sprite.stat.sprite = null;
