@@ -169,7 +169,6 @@ BattleScreen.prototype.do_damage = function(target, amt) {
     this.sprite.stat.sprite = new BSText(text);
     this.animate(false, [
 	function(frame) {
-	    this.sprite.effect.sprite = null;
 	    var t = frame > 10 ? 1 : frame / 10;
 	    this.sprite.stat.pos = [
 		tpos[0], tpos[1] - 12 * t];
@@ -241,19 +240,46 @@ BattleScreen.prototype.do_spell = function(actor, target) {
 	    return frame >= 20;
 	},
 	function(frame) {
+	    this.sprite.effect.sprite = null;
 	    this.do_damage(target, -50);
 	    return true;
 	}
     ])
 }
 
+BattleScreen.prototype.do_item = function(actor) {
+    var sp = new BSSprite('sparkle_1');
+    var apos = this.sprite[actor].pos
+    var dist = 24;
+    var pos = [apos[0], apos[1]];
+    this.sprite.effect.sprite = sp;
+    this.sprite.effect.pos = pos;
+    this.do_damage(actor, 50);
+    this.animate(false, [
+	function(frame) {
+	    var f = Math.floor(frame / 6) & 1;
+	    var t = frame / 30;
+	    pos[1] = apos[1] - 8 + (1-t) * 32;
+	    sp.name = 'sparkle_' + (f + 1);
+	    return frame >= 30;
+	},
+	function(frame) {
+	    this.sprite.effect.sprite = null;
+	    return true;
+	}
+    ])
+}
+
 BattleScreen.prototype.act_attack = function() {
+    this.show_menu = false;
     this.do_attack('player', 'monster0');
 }
 
 BattleScreen.prototype.act_spell = function() {
+    this.show_menu = false;
     this.do_spell('player', 'monster0');
 }
 
 BattleScreen.prototype.act_item = function() {
+    this.do_item('player');
 }
