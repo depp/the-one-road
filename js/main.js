@@ -6,6 +6,7 @@ function initGame() {
 	'font',
 	'sprites',
 	'menu',
+	'audio',
 	'battlescreen'
     ];
     var count = scripts.length;
