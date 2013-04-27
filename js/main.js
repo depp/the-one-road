@@ -1,8 +1,10 @@
 var main = {};
+main.keys = {}
 
 function initGame() {
     var scripts = [
 	'font',
+	'sprites',
 	'battlescreen'
     ];
     var count = scripts.length;
@@ -65,5 +67,13 @@ main.stop = function() {
     clearInterval(main.intervalid);
     main.intervalid = null;
 }
+
+addEventListener('keydown', function (e) {
+    main.keys[e.keyCode] = true;
+}, false)
+
+addEventListener('keyup', function (e) {
+    delete main.keys[e.keyCode];
+}, false)
 
 initGame();

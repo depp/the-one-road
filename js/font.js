@@ -2,7 +2,7 @@ var font_images = {};
 var font_desc = {};
 
 function Font(imgname, descname) {
-    var img;
+    var img, desc;
 
     if (imgname in font_images) {
 	img = font_images[imgname];
