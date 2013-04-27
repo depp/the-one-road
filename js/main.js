@@ -5,6 +5,7 @@ function initGame() {
     var scripts = [
 	'font',
 	'sprites',
+	'menu',
 	'battlescreen'
     ];
     var count = scripts.length;
@@ -69,11 +70,19 @@ main.stop = function() {
 }
 
 addEventListener('keydown', function (e) {
-    main.keys[e.keyCode] = true;
+    if (main.intervalid !== null) {
+	main.screen.keydown(e.keyCode);
+	e.preventDefault();
+    }
+    return false;
 }, false)
 
 addEventListener('keyup', function (e) {
-    delete main.keys[e.keyCode];
+    if (main.intervalid !== null) {
+	main.screen.keyup(e.keyCode);
+	e.preventDefault();
+    }
+    return false;
 }, false)
 
 initGame();
