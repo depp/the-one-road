@@ -1,46 +1,68 @@
-var canvas = document.createElement('canvas');
-var cxt = canvas.getContext('2d');
-var frame = 0;
+var main = {};
 
-canvas.width = 1280;
-canvas.height = 720;
-document.body.appendChild(canvas);
+function initGame() {
+    var scripts = [
+	'battlescreen'
+    ];
+    var count = scripts.length;
+    function callback() {
+	count--;
+	if (count > 0)
+	    return;
+	console.log('starting game...');
 
-var frame = 0;
-function update() {
-    frame++;
+	main.canvas = document.createElement('canvas');
+	main.cxt = main.canvas.getContext('2d');
+	main.canvas.width = 1280;
+	main.canvas.height = 720;
+	document.body.appendChild(main.canvas);
+	main.screen = new BattleScreen();
+	main.intervalid = null;
+	main.start();
+    }
+    var head = document.getElementsByTagName('head')[0];
+    for (var i = 0; i < scripts.length; i++) {
+	var script = document.createElement('script');
+	script.type = 'text/javascript';
+	script.src = 'js/' + scripts[i] + '.js';
+	script.onreadystatechange = callback;
+	script.onload = callback;
+	head.appendChild(script);
+    }
 }
 
-function redraw() {
-    cxt.fillStyle = 'rgb(0, 0, 0)';
-    cxt.fillRect(0, 0, 1280, 720);
-
-    cxt.fillStyle = 'rgb(255, 255, 255)';
-    cxt.font = '24px Helvetica';
-    cxt.textAlign = 'left';
-    cxt.textBaseline = 'top';
-    cxt.fillText('Frame ' + frame, 32, 32);
-}
-
-function main() {
+main.gameLoop = function() {
     var now = Date.now();
-    var delta = now - frametime;
+    var delta = now - main.frametime;
     var nframes = Math.floor(delta * (30 / 1000));
     if (nframes <= 0) {
 	if (nframes < 0)
-	    frametime = now;
+	    main.frametime = now;
 	return;
     }
     if (nframes >= 10) {
 	nframes = 10;
-	frametime = now;
+	main.frametime = now;
     } else {
-	frametime += nframes / (30 / 1000);
+	main.frametime += nframes / (30 / 1000);
     }
     for (var i = 0; i < nframes; i++)
-	update();
-    redraw();
+	main.screen.update();
+    main.screen.draw();
 }
 
-var frametime = Date.now();
-setInterval(main, 10);
+main.start = function() {
+    if (main.intervalid !== null)
+	return;
+    main.frametime = Date.now();
+    main.intervalid = setInterval(main.gameLoop, 10);
+}
+
+main.stop = function() {
+    if (main.intervalid === null)
+	return;
+    clearInterval(main.intervalid);
+    main.intervalid = null;
+}
+
+initGame();
