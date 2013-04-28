@@ -72,7 +72,6 @@ Menu.prototype.reload = function() {
 }
 
 Menu.prototype.hide_item = function(idx, flag) {
-    idx = this.idxs[idx];
     if (flag) {
 	if ('hidden' in this.items[idx])
 	    return;
@@ -86,7 +85,7 @@ Menu.prototype.hide_item = function(idx, flag) {
 }
 
 Menu.prototype.set_item_name = function(idx, name) {
-    this.items[this.idxs[idx]].title = name;
+    this.items[idx].title = name;
     this.reload();
 }
 

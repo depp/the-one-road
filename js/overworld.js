@@ -364,17 +364,17 @@ StatMenu.prototype.do_item = function() {
 }
 
 StatMenu.prototype.do_item1 = function(name) {
-    console.log(name);
     var info = ITEM_INFO[name];
     state.hp += info.hp || 0;
     state.mp += info.mp || 0;
     var menu = this.menu[this.menu.length-1];
+    var sel = menu.idxs[menu.selected];
     if (--state.items[name]) {
 	menu.set_item_name(
-	    menu.selected, state.items[name].toString() + '  ' + info.name);
+	    sel, state.items[name].toString() + '  ' + info.name);
     } else {
 	delete state.items[name];
-	menu.hide_item(menu.selected, true);
+	menu.hide_item(sel, true);
 	if (!menu.count)
 	    this.menu_pop();
     }
