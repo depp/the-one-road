@@ -11,6 +11,24 @@ function parallel_anim(funcs) {
     }
 }
 
+function format_number(x) {
+    if (x < 0)
+	return '\u2013' + (-x);
+    if (x > 0)
+	return '+' + x;
+    return '0';
+}
+
+function number_anim(x, y, text) {
+    var sprite = new BSText(x, y, text);
+    return [
+	sprite.insert_anim(),
+	sprite.interp_anim(x, y + 20, x, y - 8, 20, 'decel'),
+	pause_anim(20),
+	sprite.remove_anim()
+    ]
+}
+
 function BSSprite() { }
 
 BSSprite.prototype.interp = function(x1, y1, x2, y2, t, type) {
@@ -69,24 +87,6 @@ BSSprite.prototype.remove_anim = function() {
     }
 }
 
-BSSprite.prototype.damage_anim = function(amt) {
-    var spr = this;
-    var tx = spr.x, ty = spr.y;
-    if (amt > 0)
-	text = '+' + amt.toString();
-    else if (amt < 0)
-	text = amt.toString();
-    else
-	return null;
-    var sprite = new BSText(tx, ty, text);
-    return [
-	sprite.insert_anim(),
-	sprite.interp_anim(tx, ty, tx, ty - 12, 20, 'decel'),
-	pause_anim(20),
-	sprite.remove_anim()
-    ]
-}
-
 function BSEffect(x, y, sprite) {
     this.x = x;
     this.y = y;
@@ -125,7 +125,7 @@ function BSText(x, y, text) {
 BSText.prototype = new BSSprite();
 
 BSText.prototype.draw = function(bs) {
-    bs.font_small.drawLine(this.x, this.y, this.text, 1);
+    bs.font.drawLine(this.x, this.y, this.text, 1);
 }
 
 function BSPlayer(x, y) {
@@ -140,6 +140,10 @@ BSPlayer.prototype.draw = function(bs) {
     bs.sprites.draw(this.x, this.y, 'player_battle', 1);
 }
 
+BSPlayer.prototype.damage = function(bs, amt) {
+    return number_anim(this.x+8, this.y, format_number(-amt));
+}
+
 function BSMonster(x, y) {
     this.x = x;
     this.y = y;
@@ -152,13 +156,16 @@ BSMonster.prototype.draw = function(bs) {
     bs.sprites.draw(this.x, this.y, 'gremlin', 1);
 }
 
+BSMonster.prototype.damage = function(bs, amt) {
+    return number_anim(this.x, this.y, format_number(-amt));
+}
+
 // Battle Screen class
 
 function BattleScreen(state) {
     this.state = state;
 
     this.font = new Font('font1', '7x9sharp');
-    this.font_small = new Font('font1', '5x7slant');
     this.sprites = new Sprites('sprites');
     this.menu = null;
     this.setBackground('mountain');
@@ -299,7 +306,7 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     tx += (ax < tx) ? -40 : +40;
     this.animate([
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
-	parallel_anim([target.damage_anim(-50)]),
+	parallel_anim([target.damage(this, 50)]),
 	pause_anim(10),
 	actor.interp_anim(tx, ty, ax, ay, 10)
     ])
@@ -316,7 +323,7 @@ BattleScreen.prototype.do_spell = function(actor, target) {
 	effect.interp_anim(ax, ay, tx, ty, 30, 'accel'),
 	effect.sprite_anim(2, 10, ['fire_2', 'fire_3']),
 	effect.remove_anim(),
-	target.damage_anim(-50)
+	target.damage(this, 50)
     ])
 }
 
@@ -332,7 +339,7 @@ BattleScreen.prototype.do_item = function(actor) {
 	parallel_anim([
 	    sparkle.sprite_anim(-1, 6, ['sparkle_1', 'sparkle_2'])
 	]),
-	actor.damage_anim(50)
+	actor.damage(this, -50)
     ])
 }
 
