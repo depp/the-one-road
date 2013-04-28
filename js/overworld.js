@@ -19,12 +19,14 @@ Overworld.prototype.move = function() {
     var pos = state.pos, enc = state.next_encounter;
     var rate = move > 0 ? 2 : 1;
     for (var i = 0; i < OVERWORLD_SPEED; i++) {
-	if (move > 0 && pos == OVERWORLD_WIDTH)
+	if (move > 0 && pos == OVERWORLD_WIDTH) {
+	    enc = 0;
 	    break;
+	}
 	if (move < 0 && pos == 0)
 	    break;
 	pos += move;
-	if (pos > 64)
+	if (pos >= 64)
 	    enc -= rate;
 	if (enc <= 0)
 	    break;
@@ -33,11 +35,17 @@ Overworld.prototype.move = function() {
     state.next_encounter = enc;
 }
 
+Overworld.prototype.do_encounter = function() {
+    var frac = (state.pos - 64) / (OVERWORLD_WIDTH - 64);
+    var enc = Math.floor(frac * (ENCOUNTERS.length - 1));
+    main.screen = new Transition(
+	this, new BattleScreen(ENCOUNTERS[enc]), false);
+}
+
 Overworld.prototype.update = function() {
     this.move();
     if (state.next_encounter <= 0) {
-	main.screen = new Transition(
-	    this, new BattleScreen('gremlin1'), false);
+	this.do_encounter();
 	return;
     }
 }

@@ -84,6 +84,7 @@ MONSTER_INFO = {
     }
 }
 
+ENCOUNTERS = ['gremlin1', 'gremlin2']
 ENCOUNTER_INFO = {
     'gremlin1': [
 	['gremlin', 82, 190]
