@@ -114,6 +114,7 @@ function State() {
     this.hp = level_hp(1);
     this.mp = level_mp(1);
     this.xp = 0;
+    this.gp = 0;
     this.sword = 0;
     this.armor = 0;
     this.spells = {'arcane': true, 'fire': true, 'holy': true};

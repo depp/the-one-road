@@ -4,14 +4,14 @@ BaseMenu.prototype.keydown = function(code) {
     switch (code) {
     case 'down':
 	this.selected++;
-	if (this.selected >= this.items.length)
+	if (this.selected >= this.count)
 	    this.selected = 0;
 	break;
 
     case 'up':
 	this.selected--;
 	if (this.selected < 0)
-	    this.selected = this.items.length - 1;
+	    this.selected = this.count - 1;
 	break;
 
     case 'enter':
@@ -35,6 +35,7 @@ function Menu(obj, items, x, y, width) {
     this.lines = [];
     for (var i = 0; i < this.items.length; i++)
 	this.lines.push(this.items[i].title);
+    this.count = this.lines.length;
 }
 
 Menu.prototype = new BaseMenu();
@@ -45,5 +46,35 @@ Menu.prototype.draw = function(active) {
 }
 
 Menu.prototype.do_action = function() {
-    this.items[this.selected].action.call(this.obj);
+    var idx = this.selected;
+    for (var i = 0; i < this.items.length; i++) {
+	var item = this.items[i];
+	if ('hidden' in item)
+	    continue;
+	if (!idx--) {
+	    item.action.call(this.obj);
+	    return;
+	}
+    }
+}
+
+Menu.prototype.hide_item = function(idx, flag) {
+    if (flag) {
+	if ('hidden' in this.items[idx])
+	    return;
+	this.items[idx].hidden = true;
+    } else {
+	if (!('hidden' in this.items[idx]))
+	    return;
+	delete this.items[idx].hidden;
+    }
+    this.lines = [];
+    for (var i = 0; i < this.items.length; i++) {
+	var item = this.items[i];
+	if (!('hidden' in item))
+	    this.lines.push(item.title);
+    }
+    if (this.selected >= this.lines.length)
+	this.selected = this.lines.length - 1;
+    this.count = this.lines.length;
 }

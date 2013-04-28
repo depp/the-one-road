@@ -697,6 +697,7 @@ function BSTargetSelect(obj, action, targets) {
     this.action = action;
     this.items = targets;
     this.selected = 0;
+    this.count = targets.length;
 }
 
 BSTargetSelect.prototype = new BaseMenu();

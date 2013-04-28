@@ -10,7 +10,17 @@ function Overworld() {
 
     this.move_left = false;
     this.move_right = false;
+
+    var items = [
+	{ 'title': 'Menu',
+	  'action': this.do_menu, },
+	{ 'title': 'Store',
+	  'action': this.do_store }
+    ]
+    this.menu = [new Menu(this, items, 16*35, 16*19, 16*4)];
 }
+
+Overworld.prototype.menu_pop = function() { }
 
 Overworld.prototype.move = function() {
     var move = (this.move_left ? 1 : 0) + (this.move_right ? -1 : 0);
@@ -48,6 +58,7 @@ Overworld.prototype.update = function() {
 	this.do_encounter();
 	return;
     }
+    this.menu[0].hide_item(0, state.pos >= 64);
 }
 
 Overworld.prototype.draw = function() {
@@ -64,22 +75,36 @@ Overworld.prototype.draw = function() {
     sprites.draw(px - bgpos + 2 * Math.abs(Math.sin(px / 10)),
 		 230 + 2 * Math.abs(Math.sin(px / 10)),
 		 'player_overworld', 1);
+
+    for (var i = 0; i < this.menu.length; i++)
+	this.menu[i].draw(i == this.menu.length - 1);
 }
 
 Overworld.prototype.keydown = function(key) {
-    switch (key) {
-    case 'left': this.move_left = true; break;
-    case 'right': this.move_right = true; break;
-    default:
-	break;
+    if (this.menu.length <= 1) {
+	switch (key) {
+	case 'left': this.move_left = true; return;
+	case 'right': this.move_right = true; return;
+	default:
+	    break;
+	}
     }
+    this.menu[0].keydown(key);
 }
 
 Overworld.prototype.keyup = function(key) {
-    switch (key) {
-    case 'left': this.move_left = false; break;
-    case 'right': this.move_right = false; break;
-    default:
-	break;
+    if (this.menu.length <= 1) {
+	switch (key) {
+	case 'left': this.move_left = false; break;
+	case 'right': this.move_right = false; break;
+	default:
+	    break;
+	}
     }
+}
+Overworld.prototype.do_store = function() {
+    console.log('store');
+}
+Overworld.prototype.do_menu = function() {
+    console.log('menu');
 }
