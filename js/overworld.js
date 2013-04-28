@@ -34,8 +34,8 @@ Overworld.prototype.draw = function() {
     cxt.drawImage(this.background, -bgpos, 0);
 
     sprites.draw(px - bgpos + 2 * Math.abs(Math.sin(px / 10)),
-		 204 + 2 * Math.abs(Math.sin(px / 10)),
-		 'player_battle', 1);
+		 230 + 2 * Math.abs(Math.sin(px / 10)),
+		 'player_overworld', 1);
 }
 
 Overworld.prototype.keydown = function(key) {
