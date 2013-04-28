@@ -87,20 +87,15 @@ BSSprite.prototype.remove_anim = function() {
     }
 }
 
-function BSEffect(x, y, sprite) {
-    this.x = x;
-    this.y = y;
-    this.sprite = sprite;
-    this.layer = 1;
-}
+function BSImage() { }
 
-BSEffect.prototype = new BSSprite();
+BSImage.prototype = new BSSprite();
 
-BSEffect.prototype.draw = function(bs) {
+BSImage.prototype.draw = function(bs) {
     bs.sprites.draw(this.x, this.y, this.sprite, 1);
 }
 
-BSEffect.prototype.sprite_anim = function(count, speed, sprites) {
+BSImage.prototype.sprite_anim = function(count, speed, sprites) {
     var spr = this;
     return function(frame) {
 	if (!('name' in spr))
@@ -114,6 +109,15 @@ BSEffect.prototype.sprite_anim = function(count, speed, sprites) {
 	return false;
     }
 }
+
+function BSEffect(x, y, sprite) {
+    this.x = x;
+    this.y = y;
+    this.sprite = sprite;
+    this.layer = 1;
+}
+
+BSEffect.prototype = new BSImage();
 
 function BSText(x, y, text) {
     this.text = text;
@@ -147,25 +151,19 @@ function BSPlayer(x, y) {
     this.x = x;
     this.y = y;
     this.layer = 0;
+    this.sprite = 'player_battle';
 }
 
-BSPlayer.prototype = new BSSprite();
-
-BSPlayer.prototype.draw = function(bs) {
-    bs.sprites.draw(this.x, this.y, 'player_battle', 1);
-}
+BSPlayer.prototype = new BSImage();
 
 function BSMonster(x, y) {
     this.x = x;
     this.y = y;
     this.layer = 0;
+    this.sprite = 'gremlin';
 }
 
-BSMonster.prototype = new BSSprite();
-
-BSMonster.prototype.draw = function(bs) {
-    bs.sprites.draw(this.x, this.y, 'gremlin', 1);
-}
+BSMonster.prototype = new BSImage();
 
 // Battle Screen class
 
@@ -438,12 +436,20 @@ BattleScreen.prototype.attack_msg = function(lines) {
 BattleScreen.prototype.end = function(did_win) {
     this.menu = [];
     this.animation_finished = [];
-    var sprite = this.big_msg(["Defeated Gremlin"]);
-    this.animate([
-	sprite.insert_anim(),
-	pause_anim(60)
-	// sprite.remove_anim()
-    ])
+    if (did_win) {
+	var sprite = this.big_msg(["Defeated Gremlin"]);
+	this.animate([
+	    sprite.insert_anim(),
+	    pause_anim(60)
+	    // sprite.remove_anim()
+	])
+    } else {
+	var sprite = this.big_msg(["Hero was defeated!"]);
+	this.animate([
+	    sprite.insert_anim(),
+	    pause_anim(60)
+	])
+    }
 }
 
 var SWORD_ATTACK = [2, 4, 6, 10];
