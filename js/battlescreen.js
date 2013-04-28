@@ -156,22 +156,21 @@ function BSPlayer(x, y) {
 
 BSPlayer.prototype = new BSImage();
 
-function BSMonster(x, y) {
+function BSMonster(x, y, type) {
+    this.info = MONSTER_INFO[type];
     this.x = x;
     this.y = y;
     this.layer = 0;
-    this.sprite = 'gremlin'
-
-    this.attack = 2;
-    this.defense = 0;
-    this.level = 5;
+    this.sprite = this.info.sprite;
 }
 
 BSMonster.prototype = new BSImage();
 
 // Battle Screen class
 
-function BattleScreen() {
+function BattleScreen(encounter) {
+    var einfo = ENCOUNTER_INFO[encounter];
+
     this.font = new Font('font1', '7x9sharp');
     this.sprites = new Sprites('sprites');
     this.menu = [];
@@ -181,7 +180,10 @@ function BattleScreen() {
 
     this.sprite = {};
     this.addSprite(new BSPlayer(485, 195), 'player');
-    this.addSprite(new BSMonster(82, 190), 'monster0');
+    for (var i = 0; i < einfo.length; i++) {
+	var m = einfo[i];
+	this.addSprite(new BSMonster(m[1], m[2], m[0]), 'monster' + i);
+    }
 
     this.player_action();
 }
@@ -530,15 +532,15 @@ BSPlayer.prototype.damage = function(bs, amt) {
 // Monster actions
 
 BSMonster.prototype.get_attack = function() {
-    return this.attack;
+    return this.info.attack;
 }
 
 BSMonster.prototype.get_defense = function() {
-    return this.defense;
+    return this.info.defense;
 }
 
 BSMonster.prototype.get_attack_level = function() {
-    return this.level + DIFFICULTY_INFO[state.difficulty].mlevel;
+    return this.info.level + DIFFICULTY_INFO[state.difficulty].mlevel;
 }
 
 BSMonster.prototype.damage = function(bs, amt) {

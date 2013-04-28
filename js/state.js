@@ -40,12 +40,32 @@ SPELL_INFO = {
 	'penetration': 8,
 	'area': false
     },
-}	
+}
+
+MONSTER_INFO = {
+    'gremlin': {
+	'sprite': 'gremlin',
+	'hp': 30,
+	'level': 0,
+	'attack': 2,
+	'defense': 0
+    }
+}
+
+ENCOUNTER_INFO = {
+    'gremlin1': [
+	['gremlin', 82, 190]
+    ],
+    'gremlin2': [
+	['gremlin', 82, 160],
+	['gremlin', 100, 210]
+    ],
+}
 
 var DIFFICULTY_INFO = [
-    { 'plevel': 15, 'mlevel': 0 },
-    { 'plevel': 10, 'mlevel': 0 },
-    { 'plevel': 5, 'mlevel': 0 }
+    { 'plevel': 15, 'mlevel': 5 },
+    { 'plevel': 10, 'mlevel': 5 },
+    { 'plevel': 5, 'mlevel': 5 }
 ]
 
 function State() {

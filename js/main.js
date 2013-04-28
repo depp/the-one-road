@@ -46,7 +46,7 @@ function initGame() {
 
 main.newGame = function() {
     state = new State();
-    main.screen = new BattleScreen(state);
+    main.screen = new BattleScreen('gremlin2');
 }
 
 main.gameLoop = function() {
