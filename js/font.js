@@ -8,7 +8,7 @@ function Font(imgname, descname) {
 	img = font_images[imgname];
     } else {
 	img = new Image();
-	img.src = 'font/' + imgname + '.png';
+	img.src = imgname + '.png';
 	font_images[imgname] = img;
     }
 
@@ -18,7 +18,7 @@ function Font(imgname, descname) {
 	console
 	font_desc[descname] = null
 	var req = new XMLHttpRequest();
-	req.open('GET', 'font/' + descname + '.json', true);
+	req.open('GET', descname + '.json', true);
 	req.onreadystatechange = function() {
 	    if (req.readyState != 4)
 		return

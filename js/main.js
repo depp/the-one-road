@@ -27,8 +27,8 @@ function initGame() {
 	    return;
 	console.log('starting game...');
 
-	sprites = new Sprites('sprites');
-	font = new Font('font1', '7x9sharp');
+	sprites = new Sprites('img/sprites');
+	font = new Font('img/font', 'img/7x9sharp');
 
 	main.canvas = document.createElement('canvas');
 	main.cxt = main.canvas.getContext('2d');

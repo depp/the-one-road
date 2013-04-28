@@ -8,7 +8,7 @@ function Sprites(name) {
 	img = sprite_images[name];
     } else {
 	img = new Image();
-	img.src = 'sprite/' + name + '.png';
+	img.src = name + '.png';
 	sprite_images[name] = img;
     }
 
@@ -18,7 +18,7 @@ function Sprites(name) {
 	console
 	sprite_desc[name] = null
 	var req = new XMLHttpRequest();
-	req.open('GET', 'sprite/' + name + '.json', true);
+	req.open('GET', name + '.json', true);
 	req.onreadystatechange = function() {
 	    if (req.readyState != 4)
 		return

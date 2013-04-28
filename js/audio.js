@@ -26,7 +26,7 @@ function music_ended() {
 }
 
 function music_play(track) {
-    var obj = audio_obj('music/' + track);
+    var obj = audio_obj(track);
     if (obj == music_track)
 	return;
     if (music_track) {
@@ -38,4 +38,4 @@ function music_play(track) {
     music_track = obj;
 }
 
-music_play('background');
+music_play('audio/background');
