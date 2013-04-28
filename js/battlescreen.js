@@ -1,16 +1,157 @@
-function BSSprite(name) {
-    this.name = name;
-}
-BSSprite.prototype.draw = function(bs, x, y) {
-    bs.sprites.draw(x, y, this.name, 1);
+// Sprite classes
+
+function pause_anim(time) {
+    return function(frame) { return frame >= time; }
 }
 
-function BSText(text) {
+function parallel_anim(funcs) {
+    return function(frame) {
+	this.animate(funcs);
+	return true;
+    }
+}
+
+function BSSprite() { }
+
+BSSprite.prototype.interp = function(x1, y1, x2, y2, t, type) {
+    var types = {};
+    if (type) {
+	var arr = type.split(',');
+	for (var i = 0; i < arr.length; i++)
+	    types[arr[i]] = true;
+    }
+    if (t <= 0) {
+	t = 0;
+    } else if (t >= 1) {
+	t = 1;
+    } else {
+	if (types.decel) {
+	    t = Math.sin(0.5 * Math.PI * t);
+	} else if (types.accel) {
+	    t = 1 - Math.cos(0.5 * Math.PI * t);
+	} else if (types.smooth) {
+	    t = 0.5 * (1 - Math.cos(Math.PI * t));
+	}
+    }
+    var x = t * x2 + (1 - t) * x1;
+    var y = t * y2 + (1 - t) * y1;
+    if (types.jump) {
+	var dx = x2 - x1, dy = y2 - y2;
+	var dist = Math.sqrt(dx*dx + dy*dy);
+	y -= dist * t * (1 - t);
+    }
+    this.x = x;
+    this.y = y;
+}
+
+BSSprite.prototype.insert_anim = function() {
+    var spr = this;
+    return function(frame) {
+	this.addSprite(spr);
+	return true;
+    }
+}
+
+BSSprite.prototype.interp_anim = function(x1, y1, x2, y2, time, type) {
+    var spr = this;
+    return function(frame) {
+	var t = frame / time;
+	spr.interp(x1, y1, x2, y2, t, type);
+	return frame >= time;
+    }
+}
+
+BSSprite.prototype.remove_anim = function() {
+    var spr = this;
+    return function(frame) {
+	this.removeSprite(spr);
+	return true;
+    }
+}
+
+BSSprite.prototype.damage_anim = function(amt) {
+    var spr = this;
+    var tx = spr.x, ty = spr.y;
+    if (amt > 0)
+	text = '+' + amt.toString();
+    else if (amt < 0)
+	text = amt.toString();
+    else
+	return null;
+    var sprite = new BSText(tx, ty, text);
+    return [
+	sprite.insert_anim(),
+	sprite.interp_anim(tx, ty, tx, ty - 12, 20, 'decel'),
+	sprite.remove_anim()
+    ]
+}
+
+function BSEffect(x, y, sprite) {
+    this.x = x;
+    this.y = y;
+    this.sprite = sprite;
+    this.layer = 1;
+}
+
+BSEffect.prototype = new BSSprite();
+
+BSEffect.prototype.draw = function(bs) {
+    bs.sprites.draw(this.x, this.y, this.sprite, 1);
+}
+
+BSEffect.prototype.sprite_anim = function(count, speed, sprites) {
+    var spr = this;
+    return function(frame) {
+	if (!('name' in spr))
+	    return true;
+	if (count >= 0) {
+	    if (frame >= count * speed)
+		return true;
+	}
+	var spnum = Math.floor(frame / speed) % sprites.length;
+	spr.sprite = sprites[spnum];
+	return false;
+    }
+}
+
+function BSText(x, y, text) {
     this.text = text;
+    this.x = x;
+    this.y = y;
+    this.layer = 1;
 }
-BSText.prototype.draw = function(bs, x, y) {
-    bs.font_small.drawLine(x, y, this.text, 1);
+
+BSText.prototype = new BSSprite();
+
+BSText.prototype.draw = function(bs) {
+    bs.font_small.drawLine(this.x, this.y, this.text, 1);
 }
+
+function BSPlayer(x, y) {
+    this.x = x;
+    this.y = y;
+    this.layer = 0;
+}
+
+BSPlayer.prototype = new BSSprite();
+
+BSPlayer.prototype.draw = function(bs) {
+    bs.sprites.draw(this.x, this.y, 'player_battle', 1);
+}
+
+function BSMonster(x, y) {
+    this.x = x;
+    this.y = y;
+    this.layer = 0;
+}
+
+BSMonster.prototype = new BSSprite();
+
+BSMonster.prototype.draw = function(bs) {
+    bs.sprites.draw(this.x, this.y, 'gremlin', 1);
+}
+
+// Battle Screen class
 
 function BattleScreen() {
     this.frame = 0;
@@ -30,37 +171,37 @@ function BattleScreen() {
     this.show_menu = true;
     this.setBackground('mountain');
     this.animations = [];
-    this.animation_queue = []
+    this.animation_finished = []
 
-    this.sprite = {
-	'player': {
-	    'sprite': new BSSprite('player_battle'),
-	    'pos': [485, 195],
-	    'layer': 0
-	},
-	'monster0': {
-	    'sprite': new BSSprite('gremlin'),
-	    'pos': [82, 190],
-	    'layer': 0
-	}
-    };
+    this.sprite = {};
+    this.addSprite(new BSPlayer(485, 195), 'player');
+    this.addSprite(new BSMonster(82, 190), 'monster0');
 }
 
-BattleScreen.prototype.addSprite = function(sprite, pos, layer) {
-    console.log('sprite: ' + sprite + ', pos: ' + pos + ', layer: ' + layer);
-    obj = {'sprite': sprite, 'pos': pos, 'layer': layer};
-    for (var i = 0; ; i++) {
-	name = 'unique_' + i;
-	if (name in this.sprite)
-	    continue;
-	this.sprite[name] = obj;
-	obj.name = name;
-	return obj;
+BattleScreen.prototype.addSprite = function(obj, name) {
+    if ('name' in obj) {
+	console.log('not adding sprite again: ' + obj.name);
+	return;
     }
+    if (!name) {
+	for (var i = 0; ; i++) {
+	    name = 'temp_' + i;
+	    if (!(name in this.sprite))
+		break;
+	}
+    }
+    this.sprite[name] = obj;
+    obj.name = name;
 }
 
 BattleScreen.prototype.removeSprite = function(obj) {
+    if (!('name' in obj)) {
+	console.log('cannot remove sprite that does not exist');
+	console.log(obj);
+	return;
+    }
     delete this.sprite[obj.name];
+    delete obj.name;
 }
 
 BattleScreen.prototype.setBackground = function(name) {
@@ -71,17 +212,36 @@ BattleScreen.prototype.setBackground = function(name) {
 
 BattleScreen.prototype.update = function() {
     this.frame++;
-    if (this.animations.length > 0) {
+    while (true) {
 	var changed = false;
 	for (var i = 0; i < this.animations.length; i++) {
 	    var anim = this.animations[i];
-	    var frame = this.frame - anim.start;
-	    if (anim.funcs[0].call(this, frame)) {
-		anim.funcs.shift();
-		anim.start = this.frame;
-		if (!anim.funcs.length)
-		    changed = true;
+	    while (anim.funcs.length) {
+		var item = anim.funcs[0];
+		if (item instanceof Function) {
+		    if (item.call(this, anim.frame)) {
+			anim.funcs.shift();
+			anim.frame = 0;
+		    } else {
+			anim.frame++;
+			break;
+		    }
+		} else if (item === null) {
+		    anim.funcs.shift();
+		    anim.frame = 0;
+		} else if (item instanceof Array) {
+		    anim.funcs.shift();
+		    anim.funcs = item.concat(anim.funcs);
+		    anim.frame = 0;
+		} else {
+		    console.log('bad animation');
+		    console.log(item);
+		    anim.funcs.shift();
+		    anim.frame = 0;
+		}
 	    }
+	    if (!anim.funcs.length)
+		changed = true;
 	}
 	if (changed) {
 	    var nanims = [];
@@ -91,32 +251,25 @@ BattleScreen.prototype.update = function() {
 		    nanims.push(anim);
 	    }
 	    this.animations = nanims;
-	    if (!nanims.length && this.animation_queue.length) {
-		this.animate(false, this.animation_queue.shift())
-	    }
+	}
+	if (this.animations.length)
+	    return;
+	while (true) {
+	    if (!this.animation_finished.length)
+		return;
+	    this.animation_finished.shift().call(this);
+	    if (this.animations.length)
+		break;
 	}
     }
 }
 
-BattleScreen.prototype.animate = function(queue, funcs) {
-    if (queue && this.animations.length) {
-	this.animation_queue.push(funcs);
-    } else {
-	this.animations.push({
-	    'start': this.frame,
-	    'funcs': funcs
-	})
-    }
+BattleScreen.prototype.animate = function(funcs) {
+    this.animations.push({'frame': 0, 'funcs': funcs})
 }
 
 BattleScreen.prototype.queue_func = function(func) {
-    funcs = [
-	function(frame) {
-	    func.call(this);
-	    return true;
-	}
-    ]
-    this.animate(true, funcs);
+    this.animation_finished.push(func);
 }
 
 BattleScreen.prototype.draw = function() {
@@ -128,7 +281,7 @@ BattleScreen.prototype.draw = function() {
 	for (var name in this.sprite) {
 	    var sp = this.sprite[name];
 	    if (sp.layer == i)
-		sp.sprite.draw(this, sp.pos[0], sp.pos[1]);
+		sp.draw(this);
 	}
     }
     var infow = 9, infox = 640 - (infow+1)*16;
@@ -149,145 +302,45 @@ BattleScreen.prototype.keydown = function(code) {
 
 BattleScreen.prototype.keyup = function(code) { }
 
-function battle_smooth(t) {
-    if (t < 0)
-	return 0;
-    if (t > 1)
-	return 1;
-    return 0.5 * (1 - Math.cos(t * Math.PI));
-}
-
-function battle_dist(pos1, pos2) {
-    var dx = pos1[0] - pos2[0];
-    var dy = pos1[1] - pos2[1];
-    return Math.sqrt(dx*dx + dy*dy);
-}
-
-function battle_interp(p1, p2, t, type) {
-    var x1 = p1[0], x2 = p2[0], y1 = p1[1], y2 = p2[1];
-    var x = t * x2 + (1 - t) * x1;
-    var y = t * y2 + (1 - t) * y1;
-    switch (type) {
-    case 'jump':
-	y -= battle_dist(p1, p2) * t * (1 - t);
-	break;
-
-    default:
-	break;
-    }
-    return [x, y];
-}
-
-BattleScreen.prototype.do_damage = function(target, amt) {
-    var tpos = target.pos;
-    var text;
-    if (amt > 0)
-	text = '+' + amt.toString();
-    else if (amt < 0)
-	text = amt.toString();
-    else
-	return;
-    var stats = null;
-    this.animate(false, [
-	function(frame) {
-	    var t = frame / 20;
-	    t = battle_smooth(t*2-1);
-	    if (!stats)
-		stats = this.addSprite(new BSText(text), null, 1);
-	    stats.pos = [tpos[0], tpos[1] - 12 * t];
-	    return frame >= 20;
-	},
-	function(frame) {
-	    this.removeSprite(stats);
-	    return true;
-	}
-    ])
-}
-
 BattleScreen.prototype.do_attack = function(actor, target) {
-    var apos = actor.pos, tpos = target.pos;
-    var fpos = [
-	tpos[0] + (apos[0] < tpos[0] ? -40 : +40),
-	tpos[1]
-    ]
-    this.animate(false, [
-	function(frame) {
-	    var t = frame / 30;
-	    t = battle_smooth(t);
-	    actor.pos = battle_interp(apos, fpos, t, 'jump');
-	    return frame >= 30;
-	},
-	function(frame) {
-	    this.do_damage(target, -50);
-	    return true;
-	},
-	function(frame) {
-	    var t = battle_smooth(frame / 10);
-	    actor.pos = battle_interp(fpos, apos, t, 'linear');
-	    return frame >= 10;
-	},
-	function(frame) {
-	    actor.pos = apos;
-	    return true;
-	}
+    var ax = actor.x, ay = actor.y;
+    var tx = target.x, ty = target.y;
+    tx += (ax < tx) ? -40 : +40;
+    this.animate([
+	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
+	target.damage_anim(-50),
+	actor.interp_anim(tx, ty, ax, ay, 10),
     ])
 }
 
 BattleScreen.prototype.do_spell = function(actor, target) {
-    var apos = actor.pos, tpos = target.pos;
-    var spos = [apos[0], apos[1]]
-    var fpos = [tpos[0], tpos[1]]
-    if (apos[0] < tpos[0])
-	spos[0] += 16;
-    else
-	spos[0] -= 16;
-    var effect = null;
-    this.animate(false, [
-	function(frame) {
-	    if (!effect)
-		effect = this.addSprite(new BSSprite('fire_1'), spos, 1);
-	    effect.pos = spos;
-	    return frame >= 20;
-	},
-	function(frame) {
-	    var t = frame / 30;
-	    t = battle_smooth(t*0.5) * 2.0;
-	    effect.pos = battle_interp(spos, fpos, t, 'linear');
-	    return frame >= 30;
-	},
-	function(frame) {
-	    effect.pos = fpos;
-	    effect.sprite.name = (
-		frame <= 10 ? 'fire_2' : 'fire_3');
-	    return frame >= 20;
-	},
-	function(frame) {
-	    this.removeSprite(effect);
-	    this.do_damage(target, -50);
-	    return true;
-	}
+    var ax = actor.x, ay = actor.y;
+    var tx = target.x, ty = target.y;
+    ax += (ax < tx) ? +16 : -16;
+    var effect = new BSEffect(ax, ay, 'fire_1');
+    this.animate([
+	effect.insert_anim(),
+	pause_anim(20),
+	effect.interp_anim(ax, ay, tx, ty, 30, 'accel'),
+	effect.sprite_anim(2, 10, ['fire_2', 'fire_3']),
+	effect.remove_anim(),
+	target.damage_anim(-50)
     ])
 }
 
 BattleScreen.prototype.do_item = function(actor) {
-    var dist = 24;
-    var sparkle = null;
-    this.do_damage(actor, 50);
-    this.animate(false, [
-	function(frame) {
-	    if (!sparkle)
-		sparkle = this.addSprite(new BSSprite('sparkle_1'), null, 1);
-	    var f = Math.floor(frame / 6) & 1;
-	    var t = frame / 30;
-	    sparkle.pos = [actor.pos[0],
-			   actor.pos[1] - 8 + (1-t) * 32]
-	    sparkle.sprite.name = 'sparkle_' + (f + 1);
-	    return frame >= 30;
-	},
-	function(frame) {
-	    this.removeSprite(sparkle);
-	    return true;
-	}
+    var ax = actor.x, ay = actor.y;
+    var sparkle = new BSEffect(ax, ay + 24, 'sparkle_1')
+    this.animate([
+	sparkle.insert_anim(),
+	parallel_anim([
+	    sparkle.interp_anim(ax, ay + 24, ax, ay - 8, 30),
+	    sparkle.remove_anim()
+	]),
+	parallel_anim([
+	    sparkle.sprite_anim(-1, 6, ['sparkle_1', 'sparkle_2'])
+	]),
+	actor.damage_anim(50)
     ])
 }
 
