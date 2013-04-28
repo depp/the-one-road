@@ -13,9 +13,9 @@ function Menu(obj, items, sprites, font, x, y, width) {
 	this.lines.push(this.items[i].title);
 }
 
-Menu.prototype.draw = function() {
+Menu.prototype.draw = function(active) {
     text_box(this.sprites, this.font, this.x, this.y, this.width,
-	     this.lines, this.selected);
+	     this.lines, active ? this.selected : null);
 }
 
 Menu.prototype.keydown = function(code) {
@@ -34,6 +34,10 @@ Menu.prototype.keydown = function(code) {
 
     case 'enter':
 	this.items[this.selected].action.call(this.obj);
+	break;
+
+    case 'esc':
+	this.obj.menu_pop();
 	break;
     }
 }

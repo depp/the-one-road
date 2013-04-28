@@ -15,14 +15,30 @@ function level_xp(level) {
     return 120 + 25 * level + 5 * level * level;
 }
 
+SPELLS = ['arcane', 'fire', 'holy']
+SPELL_INFO = {
+    'arcane': {
+	'name': 'Arcane Bolt',
+	'cost': 2
+    },
+    'fire': {
+	'name': 'Fireball',
+	'cost': 5
+    },
+    'holy': {
+	'name': 'Light of Heaven',
+	'cost': 25
+    }
+}	
+
 function State() {
     this.level = 1;
     this.hp = level_hp(1);
     this.mp = level_mp(1);
     this.sword = 0;
     this.armor = 0;
-    this.spells = {};
-    this.items = {};
+    this.spells = {'arcane': true, 'fire': true, 'holy': true};
+    this.items = {'potion': 5, 'elixir': 1, 'potato': 1};
     this.shield = false;
 }
 
