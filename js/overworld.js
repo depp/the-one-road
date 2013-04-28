@@ -132,6 +132,7 @@ function StoreMenu(obj) {
 	{ 'title': 'Armor', 'action': this.do_armor },
 	{ 'title': 'Spells', 'action': this.do_spells },
 	{ 'title': 'Items', 'action': this.do_items },
+	{ 'title': 'Inn (25 GP)', 'action': this.do_inn },
     ]
     var mw = 16*8;
     this.menu = [new Menu(this, items, 320 - mw / 2, 64, mw)];
@@ -153,7 +154,7 @@ StoreMenu.prototype.draw = function(active) {
 	this.menu[i].draw(active && i == this.menu.length - 1);
     var mw = 16 * 16;
     if (this.msg)
-	drawTextBox(320 - mw / 2, 16*9, mw, this.msg, null, 'center');
+	drawTextBox(320 - mw / 2, 16*10, mw, this.msg, null, 'center');
 }
 
 StoreMenu.prototype.keydown = function(key) {
@@ -240,10 +241,17 @@ StoreMenu.prototype.do_items = function() {
     this.do_submenu(items);
 }
 
+StoreMenu.prototype.do_inn = function() {
+    if (!this.pay(25))
+	return;
+    state.hp = level_hp(state.level);
+    state.mp = level_mp(state.level);
+}
+
 StoreMenu.prototype.do_submenu = function(items) {
     this.msg = null;
     var mw = 16*12;
-    this.menu.push(new Menu(this, items, 320 - mw / 2, 16*11, mw));
+    this.menu.push(new Menu(this, items, 320 - mw / 2, 16*12, mw));
 }
 
 StoreMenu.prototype.pay = function(gp) {
@@ -399,5 +407,5 @@ StatMenu.prototype.do_item1 = function(name) {
 StatMenu.prototype.do_submenu = function(items) {
     this.msg = null;
     var mw = 16*10;
-    this.menu.push(new Menu(this, items, 480 - mw / 2 + 8, 72, mw));
+    this.menu.push(new Menu(this, items, 480 - mw / 2 + 8, 80, mw));
 }
