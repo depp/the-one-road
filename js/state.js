@@ -28,6 +28,45 @@ function level_xp(level) {
     return 120 + 25 * level + 5 * level * level;
 }
 
+var SWORD_ATTACK = [2, 4, 6, 10];
+var ARMOR_DEFENSE = [0, 2, 5, 8];
+
+SWORD_INFO = [
+    {
+	'name': 'Fists'
+    },
+    {
+	'name': 'Wooden Sword',
+	'gp': 15
+    },
+    {
+	'name': 'Rusty Sword',
+	'gp': 40,
+    },
+    {
+	'name': 'Excalibur',
+	'gp': 160
+    }
+]
+
+ARMOR_INFO = [
+    {
+	'name': 'Cloth'
+    },
+    {
+	'name': 'Leather Armor',
+	'gp': 20
+    },
+    {
+	'name': 'Chainmail',
+	'gp': 50
+    },
+    {
+	'name': 'Iron Armor',
+	'gp': 200
+    }
+]
+
 SPELLS = ['arcane', 'fire', 'holy']
 SPELL_INFO = {
     'arcane': {
@@ -35,21 +74,24 @@ SPELL_INFO = {
 	'cost': 2,
 	'attack': 4,
 	'penetration': 4,
-	'area': false
+	'area': false,
+	'gp': 30,
     },
     'fire': {
 	'name': 'Fireball',
 	'cost': 5,
 	'attack': 3,
 	'penetration': 0,
-	'area': true
+	'area': true,
+	'gp': 35
     },
     'holy': {
 	'name': 'Light of Heaven',
 	'cost': 25,
 	'attack': 12,
 	'penetration': 8,
-	'area': false
+	'area': false,
+	'gp': 225
     },
 }
 
@@ -57,20 +99,24 @@ ITEMS = ['potion', 'ether', 'elixir', 'potato']
 ITEM_INFO = {
     'potion': {
 	'name': 'Potion',
-	'hp': 50
+	'hp': 50,
+	'gp': 10,
     },
     'ether': {
 	'name': 'Ether',
-	'mp': 40
+	'mp': 40,
+	'gp': 25,
     },
     'elixir': {
 	'name': 'Elixir',
 	'hp': 200,
-	'mp': 75
+	'mp': 75,
+	'gp': 300,
     },
     'potato': {
 	'name': 'Potato',
-	'hp': 100
+	'hp': 100,
+	'gp': 1,
     }
 }
 
@@ -135,7 +181,7 @@ MSG_BATTLEWIN = [
     "Monsters were defeated!",
     "Onward ho!",
     "That was easy enough!",
-    "You\u2013re a legend!",
+    "You\u2019re a legend!",
     "The hero marches on!"
 ];
 
@@ -146,4 +192,26 @@ MSG_BATTLELOSE = [
     "Try again in the next life.",
     "Today was a good day to die.",
     "It all ended right there."
+];
+
+MSG_CANTBUY = [
+    "Paying customers only.",
+    "You can\u2019t afford that.",
+    "This isn\u2019t a charity.",
+    "You gotta earn it, kid.",
+    "Buzz off, cheapskate.",
+    "If wishes were horses.",
+    "For you, cash up front.",
+    "I\u2019m on break.",
+    "That\u2019s real funny."
+];
+
+MSG_DIDBUY = [
+    "Thanks for your business.",
+    "Please come again.",
+    "Pleasure doing business.",
+    "This is going towards my boat.",
+    "Should I wrap that for you?",
+    "Thank you, come again.",
+    "Here\u2019s your receipt."
 ];

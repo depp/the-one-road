@@ -620,9 +620,6 @@ BattleScreen.prototype.do_spell = function(name, actor, targets) {
     return anim;
 }
 
-var SWORD_ATTACK = [2, 4, 6, 10];
-var ARMOR_DEFENSE = [0, 2, 5, 8];
-
 function atk_damage(atk, def, level) {
     // console.log('attack: ATK=' + atk + ', DEF=' + def + ', LEVEL=' + level);
     if (atk < 0)

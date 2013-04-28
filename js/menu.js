@@ -58,6 +58,18 @@ Menu.prototype.do_action = function() {
     }
 }
 
+Menu.prototype.reload = function() {
+    this.lines = [];
+    for (var i = 0; i < this.items.length; i++) {
+	var item = this.items[i];
+	if (!('hidden' in item))
+	    this.lines.push(item.title);
+    }
+    if (this.selected >= this.lines.length)
+	this.selected = this.lines.length - 1;
+    this.count = this.lines.length;
+}
+
 Menu.prototype.hide_item = function(idx, flag) {
     if (flag) {
 	if ('hidden' in this.items[idx])
@@ -68,15 +80,12 @@ Menu.prototype.hide_item = function(idx, flag) {
 	    return;
 	delete this.items[idx].hidden;
     }
-    this.lines = [];
-    for (var i = 0; i < this.items.length; i++) {
-	var item = this.items[i];
-	if (!('hidden' in item))
-	    this.lines.push(item.title);
-    }
-    if (this.selected >= this.lines.length)
-	this.selected = this.lines.length - 1;
-    this.count = this.lines.length;
+    this.reload();
+}
+
+Menu.prototype.set_item_name = function(idx, name) {
+    this.items[idx].title = name;
+    this.reload();
 }
 
 function BSTransitionMenu(target, reverse) {

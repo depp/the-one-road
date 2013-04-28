@@ -14,13 +14,16 @@ function Overworld() {
     var items = [
 	{ 'title': 'Menu',
 	  'action': this.do_menu, },
-	{ 'title': 'Store',
+	{ 'title': 'Shop',
 	  'action': this.do_store }
     ]
     this.menu = [new Menu(this, items, 16*35, 16*19, 16*4)];
 }
 
-Overworld.prototype.menu_pop = function() { }
+Overworld.prototype.menu_pop = function() {
+    if (this.menu.length > 1)
+	this.menu.pop();
+}
 
 Overworld.prototype.move = function() {
     var move = (this.move_left ? 1 : 0) + (this.move_right ? -1 : 0);
@@ -76,8 +79,7 @@ Overworld.prototype.draw = function() {
 		 230 + 2 * Math.abs(Math.sin(px / 10)),
 		 'player_overworld', 1);
 
-    for (var i = 0; i < this.menu.length; i++)
-	this.menu[i].draw(i == this.menu.length - 1);
+    this.menu[this.menu.length-1].draw(true);
 }
 
 Overworld.prototype.keydown = function(key) {
@@ -89,7 +91,7 @@ Overworld.prototype.keydown = function(key) {
 	    break;
 	}
     }
-    this.menu[0].keydown(key);
+    this.menu[this.menu.length - 1].keydown(key);
 }
 
 Overworld.prototype.keyup = function(key) {
@@ -103,8 +105,177 @@ Overworld.prototype.keyup = function(key) {
     }
 }
 Overworld.prototype.do_store = function() {
-    console.log('store');
+    this.move_left = false;
+    this.move_right = false;
+    this.menu.push(new StoreMenu(this));
 }
+
 Overworld.prototype.do_menu = function() {
-    console.log('menu');
+    this.move_left = false;
+    this.move_right = false;
+}
+
+function StoreMenu(obj) {
+    this.obj = obj;
+    var items = [
+	{ 'title': 'Swords', 'action': this.do_swords },
+	{ 'title': 'Armor', 'action': this.do_armor },
+	{ 'title': 'Spells', 'action': this.do_spells },
+	{ 'title': 'Items', 'action': this.do_items },
+    ]
+    var mw = 16*8;
+    this.menu = [new Menu(this, items, 320 - mw / 2, 64, mw)];
+    this.msg = null;
+}
+
+StoreMenu.prototype.menu_pop = function() {
+    this.menu.pop();
+    if (!this.menu.length)
+	this.obj.menu_pop();
+}
+
+StoreMenu.prototype.draw = function(active) {
+    var tw = 16 * 10;
+    text_box(320 - tw / 2, 16, tw,
+	     ['Shopping District',
+	      'You have: ' + state.gp + ' GP'], null, 'center');
+    for (var i = 0; i < this.menu.length; i++)
+	this.menu[i].draw(active && i == this.menu.length - 1);
+    var mw = 16 * 16;
+    if (this.msg)
+	text_box(320 - mw / 2, 16*9, mw, this.msg, null, 'center');
+}
+
+StoreMenu.prototype.keydown = function(key) {
+    this.menu[this.menu.length-1].keydown(key);
+}
+
+StoreMenu.prototype.missing_spells = function() {
+    var missing = [];
+    return missing;
+}
+
+StoreMenu.prototype.do_swords = function() {
+    var items = [];
+    for (var i = state.sword + 1; i < SWORD_INFO.length; i++) {
+	var sword = SWORD_INFO[i];
+	items.push({
+	    'title': sword.name + ' \u2014 ' + sword.gp + ' GP',
+	    'action': (function(idx) {
+		return function() { this.do_swords1(idx); };
+	    })(i)
+	})
+    }
+    if (items.length) {
+	this.do_submenu(items);
+    } else {
+	this.msg = ['You already have the best sword.'];
+    }
+}
+
+StoreMenu.prototype.do_armor = function() {
+    var items = [];
+    for (var i = state.armor + 1; i < ARMOR_INFO.length; i++) {
+	var armor = ARMOR_INFO[i];
+	items.push({
+	    'title': armor.name + ' \u2014 ' + armor.gp + ' GP',
+	    'action': (function(idx) {
+		return function() { this.do_armor1(idx); };
+	    })(i)
+	})
+    }
+    if (items.length) {
+	this.do_submenu(items);
+    } else {
+	this.msg = ['You already have the best armor.'];
+    }
+}
+
+StoreMenu.prototype.do_spells = function() {
+    var items = [];
+    for (var i = 0; i < SPELLS.length; i++) {
+	var spell = SPELLS[i];
+	if (spell in state.spells)
+	    continue;
+	var info = SPELL_INFO[spell];
+	items.push({
+	    'title': info.name + ' \u2014 ' + info.gp + ' GP',
+	    'action': (function(name) {
+		return function() { this.do_spell1(name); };
+	    })(spell)
+	})
+    }
+    if (items.length) {
+	this.do_submenu(items);
+    } else {
+	this.msg = ['You already know all the spells.'];
+    }
+}
+
+StoreMenu.prototype.do_items = function() {
+    var items = [];
+    for (var i = 0; i < ITEMS.length; i++) {
+	var item = ITEMS[i];
+	var info = ITEM_INFO[item];
+	items.push({
+	    'title': (state.items[item] || 0).toString() + '  ' +
+		info.name + ' \u2014 ' + info.gp + ' GP',
+	    'action': (function(name) {
+		return function() { this.do_item1(name); };
+	    })(item)
+	})
+    }
+    this.do_submenu(items);
+}
+
+StoreMenu.prototype.do_submenu = function(items) {
+    this.msg = null;
+    var mw = 16*12;
+    this.menu.push(new Menu(this, items, 320 - mw / 2, 16*11, mw));
+}
+
+StoreMenu.prototype.pay = function(gp) {
+    if (state.gp < gp) {
+	this.msg = [rand_message(MSG_CANTBUY)];
+	return false;
+    } else {
+	this.msg = [rand_message(MSG_DIDBUY)];
+	state.gp -= gp;
+	return true;
+    }
+}
+
+StoreMenu.prototype.do_swords1 = function(idx) {
+    var info = SWORD_INFO[idx];
+    if (!this.pay(info.gp))
+	return;
+    this.menu_pop();
+    state.sword = idx;
+}
+
+StoreMenu.prototype.do_armor1 = function(idx) {
+    var info = ARMOR_INFO[idx];
+    if (!this.pay(info.gp))
+	return;
+    this.menu_pop();
+    state.armor = idx;
+}
+
+StoreMenu.prototype.do_spell1 = function(name) {
+    var info = SPELL_INFO[name];
+    if (!this.pay(info.gp))
+	return;
+    this.menu_pop();
+    state.spells[name] = true;
+}
+
+StoreMenu.prototype.do_item1 = function(name) {
+    var info = ITEM_INFO[name];
+    if (!this.pay(info.gp))
+	return;
+    state.items[name] = (state.items[name] || 0) + 1;
+    var menu = this.menu[this.menu.length-1];
+    menu.set_item_name(menu.selected, 
+		       state.items[name].toString() + '  ' +
+		       info.name + ' \u2014 ' + info.gp + ' GP');
 }
