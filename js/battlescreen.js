@@ -42,16 +42,25 @@ function BattleScreen() {
 	    'sprite': new BSSprite('gremlin'),
 	    'pos': [82, 190],
 	    'layer': 0
-	},
-	'stat': {
-	    'sprite': null,
-	    'layer': 1
-	},
-	'effect': {
-	    'sprite': null,
-	    'layer': 1
-	},
+	}
     };
+}
+
+BattleScreen.prototype.addSprite = function(sprite, pos, layer) {
+    console.log('sprite: ' + sprite + ', pos: ' + pos + ', layer: ' + layer);
+    obj = {'sprite': sprite, 'pos': pos, 'layer': layer};
+    for (var i = 0; ; i++) {
+	name = 'unique_' + i;
+	if (name in this.sprite)
+	    continue;
+	this.sprite[name] = obj;
+	obj.name = name;
+	return obj;
+    }
+}
+
+BattleScreen.prototype.removeSprite = function(obj) {
+    delete this.sprite[obj.name];
 }
 
 BattleScreen.prototype.setBackground = function(name) {
@@ -118,7 +127,7 @@ BattleScreen.prototype.draw = function() {
     for (var i = 0; i < 2; i++) {
 	for (var name in this.sprite) {
 	    var sp = this.sprite[name];
-	    if (sp.layer == i && sp.sprite !== null)
+	    if (sp.layer == i)
 		sp.sprite.draw(this, sp.pos[0], sp.pos[1]);
 	}
     }
@@ -170,7 +179,7 @@ function battle_interp(p1, p2, t, type) {
 }
 
 BattleScreen.prototype.do_damage = function(target, amt) {
-    var tpos = this.sprite[target].pos;
+    var tpos = target.pos;
     var text;
     if (amt > 0)
 	text = '+' + amt.toString();
@@ -178,24 +187,25 @@ BattleScreen.prototype.do_damage = function(target, amt) {
 	text = amt.toString();
     else
 	return;
-    this.sprite.stat.sprite = new BSText(text);
+    var stats = null;
     this.animate(false, [
 	function(frame) {
-	    var t = frame > 10 ? 1 : frame / 10;
-	    this.sprite.stat.pos = [
-		tpos[0], tpos[1] - 12 * t];
+	    var t = frame / 20;
+	    t = battle_smooth(t*2-1);
+	    if (!stats)
+		stats = this.addSprite(new BSText(text), null, 1);
+	    stats.pos = [tpos[0], tpos[1] - 12 * t];
 	    return frame >= 20;
 	},
 	function(frame) {
-	    this.sprite.stat.sprite = null;
+	    this.removeSprite(stats);
 	    return true;
 	}
     ])
 }
 
 BattleScreen.prototype.do_attack = function(actor, target) {
-    var apos = this.sprite[actor].pos;
-    var tpos = this.sprite[target].pos;
+    var apos = actor.pos, tpos = target.pos;
     var fpos = [
 	tpos[0] + (apos[0] < tpos[0] ? -40 : +40),
 	tpos[1]
@@ -204,7 +214,7 @@ BattleScreen.prototype.do_attack = function(actor, target) {
 	function(frame) {
 	    var t = frame / 30;
 	    t = battle_smooth(t);
-	    this.sprite[actor].pos = battle_interp(apos, fpos, t, 'jump');
+	    actor.pos = battle_interp(apos, fpos, t, 'jump');
 	    return frame >= 30;
 	},
 	function(frame) {
@@ -213,46 +223,46 @@ BattleScreen.prototype.do_attack = function(actor, target) {
 	},
 	function(frame) {
 	    var t = battle_smooth(frame / 10);
-	    this.sprite[actor].pos = battle_interp(fpos, apos, t, 'linear');
+	    actor.pos = battle_interp(fpos, apos, t, 'linear');
 	    return frame >= 10;
 	},
 	function(frame) {
-	    this.sprite[actor].pos = apos;
+	    actor.pos = apos;
 	    return true;
 	}
     ])
 }
 
 BattleScreen.prototype.do_spell = function(actor, target) {
-    var apos = this.sprite[actor].pos;
-    var tpos = this.sprite[target].pos;
+    var apos = actor.pos, tpos = target.pos;
     var spos = [apos[0], apos[1]]
     var fpos = [tpos[0], tpos[1]]
     if (apos[0] < tpos[0])
 	spos[0] += 16;
     else
 	spos[0] -= 16;
+    var effect = null;
     this.animate(false, [
 	function(frame) {
-	    if (!this.sprite.effect.sprite)
-		this.sprite.effect.sprite = new BSSprite('fire_1');
-	    this.sprite.effect.pos = spos;
+	    if (!effect)
+		effect = this.addSprite(new BSSprite('fire_1'), spos, 1);
+	    effect.pos = spos;
 	    return frame >= 20;
 	},
 	function(frame) {
 	    var t = frame / 30;
 	    t = battle_smooth(t*0.5) * 2.0;
-	    this.sprite.effect.pos = battle_interp(spos, fpos, t, 'linear');
+	    effect.pos = battle_interp(spos, fpos, t, 'linear');
 	    return frame >= 30;
 	},
 	function(frame) {
-	    this.sprite.effect.pos = fpos;
-	    this.sprite.effect.sprite.name = (
+	    effect.pos = fpos;
+	    effect.sprite.name = (
 		frame <= 10 ? 'fire_2' : 'fire_3');
 	    return frame >= 20;
 	},
 	function(frame) {
-	    this.sprite.effect.sprite = null;
+	    this.removeSprite(effect);
 	    this.do_damage(target, -50);
 	    return true;
 	}
@@ -260,23 +270,22 @@ BattleScreen.prototype.do_spell = function(actor, target) {
 }
 
 BattleScreen.prototype.do_item = function(actor) {
-    var sp = new BSSprite('sparkle_1');
-    var apos = this.sprite[actor].pos
     var dist = 24;
-    var pos = [apos[0], apos[1]];
-    this.sprite.effect.sprite = sp;
-    this.sprite.effect.pos = pos;
+    var sparkle = null;
     this.do_damage(actor, 50);
     this.animate(false, [
 	function(frame) {
+	    if (!sparkle)
+		sparkle = this.addSprite(new BSSprite('sparkle_1'), null, 1);
 	    var f = Math.floor(frame / 6) & 1;
 	    var t = frame / 30;
-	    pos[1] = apos[1] - 8 + (1-t) * 32;
-	    sp.name = 'sparkle_' + (f + 1);
+	    sparkle.pos = [actor.pos[0],
+			   actor.pos[1] - 8 + (1-t) * 32]
+	    sparkle.sprite.name = 'sparkle_' + (f + 1);
 	    return frame >= 30;
 	},
 	function(frame) {
-	    this.sprite.effect.sprite = null;
+	    this.removeSprite(sparkle);
 	    return true;
 	}
     ])
@@ -284,23 +293,23 @@ BattleScreen.prototype.do_item = function(actor) {
 
 BattleScreen.prototype.act_attack = function() {
     this.show_menu = false;
-    this.do_attack('player', 'monster0');
+    this.do_attack(this.sprite.player, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_spell = function() {
     this.show_menu = false;
-    this.do_spell('player', 'monster0');
+    this.do_spell(this.sprite.player, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_item = function() {
     this.show_menu = false;
-    this.do_item('player');
+    this.do_item(this.sprite.player);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.monster_action = function() {
-    this.do_attack('monster0', 'player');
-    this.animate(true, [function() { this.show_menu = true; return true; }]);
+    this.do_attack(this.sprite.monster0, this.sprite.player);
+    this.queue_func(function() { this.show_menu = true; });
 }
