@@ -19,6 +19,13 @@ function format_number(x) {
     return '0';
 }
 
+function sfx_anim(name) {
+    return function(frame) {
+	sfxPlay(name);
+	return true;
+    }
+}
+
 function BSSprite() { }
 
 BSSprite.prototype.interp = function(x1, y1, x2, y2, t, type) {
@@ -344,6 +351,7 @@ BattleScreen.prototype.do_attack1 = function(actor, target, amt) {
     tx += (ax < tx) ? -40 : +40;
     return [
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
+	sfx_anim('hit'),
 	parallel_anim([target.damage(this, amt)]),
 	pause_anim(10),
 	actor.interp_anim(tx, ty, ax, ay, 10)
@@ -472,7 +480,8 @@ BattleScreen.prototype.act_item = function() {
 BattleScreen.prototype.act_item1 = function(name) {
     var info = ITEM_INFO[name];
     this.menu = [];
-    var anim = [this.attack_msg([info.name])];
+    var anim = [this.attack_msg([info.name]),
+		sfx_anim('drink')];
     if (!--state.items[name])
 	delete state.items[name];
     var player = this.sprite.player;
@@ -584,6 +593,7 @@ BattleScreen.prototype.end = function(did_win) {
 	var sprite = this.big_msg([rand_message(MSG_BATTLELOSE)]);
 	this.sprite.player.sprite = 'player_dead';
 	this.animate([
+	    sfx_anim('deathmusic'),
 	    sprite.insert_anim(),
 	])
     }
@@ -605,7 +615,8 @@ BattleScreen.prototype.do_spell = function(name, actor, targets) {
 	return x.name < y.name ? -1 : 1;
     })
     var info = SPELL_INFO[name];
-    var anim = [this.attack_msg([info.name])];
+    var anim = [this.attack_msg([info.name]),
+		sfx_anim(name)];
     for (var i = 0; i < targets.length; i++) {
 	var target = targets[i];
 	var amt = atk_damage(

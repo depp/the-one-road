@@ -6,16 +6,19 @@ BaseMenu.prototype.keydown = function(code) {
 	this.selected++;
 	if (this.selected >= this.count)
 	    this.selected = 0;
+	sfxPlay('menu_click');
 	break;
 
     case 'up':
 	this.selected--;
 	if (this.selected < 0)
 	    this.selected = this.count - 1;
+	sfxPlay('menu_click');
 	break;
 
     case 'enter':
 	this.do_action();
+	sfxPlay('menu_click');
 	break;
 
     case 'esc':

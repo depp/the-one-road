@@ -241,6 +241,7 @@ StoreMenu.prototype.pay = function(gp) {
 	return false;
     } else {
 	this.msg = [rand_message(MSG_DIDBUY)];
+	sfxPlay('money');
 	state.gp -= gp;
 	return true;
     }
