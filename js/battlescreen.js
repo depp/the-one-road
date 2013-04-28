@@ -712,15 +712,3 @@ BSTargetSelect.prototype.draw = function(active) {
 BSTargetSelect.prototype.do_action = function() {
     this.action.call(this.obj, this.items[this.selected]);
 }
-
-function BSTransitionMenu(target, reverse) {
-    this.target = target;
-    this.reverse = reverse;
-}
-
-BSTransitionMenu.prototype.keydown = function(code) {
-    if (code == 'enter')
-	main.screen = new Transition(main.screen, this.target, this.reverse);
-}
-
-BSTransitionMenu.prototype.draw = function(active) { }

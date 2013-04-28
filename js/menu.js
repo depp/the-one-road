@@ -78,3 +78,15 @@ Menu.prototype.hide_item = function(idx, flag) {
 	this.selected = this.lines.length - 1;
     this.count = this.lines.length;
 }
+
+function BSTransitionMenu(target, reverse) {
+    this.target = target;
+    this.reverse = reverse;
+}
+
+BSTransitionMenu.prototype.keydown = function(code) {
+    if (code == 'enter')
+	main.screen = new Transition(main.screen, this.target, this.reverse);
+}
+
+BSTransitionMenu.prototype.draw = function(active) { }
