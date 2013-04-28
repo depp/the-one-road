@@ -1,3 +1,5 @@
+var state = null;
+
 function random(min, max) {
     var x = Math.floor(Math.random() * (max + 1 - min)) + min;
     return x >= max ? max : x;
@@ -56,12 +58,4 @@ function State() {
     this.spells = {'arcane': true, 'fire': true, 'holy': true};
     this.items = {'potion': 5, 'elixir': 1, 'potato': 1};
     this.shield = false;
-}
-
-State.prototype.has_spells = function() {
-    return !isObjectEmpty(this.spells);
-}
-
-State.prototype.has_items = function() {
-    return !isObjectEmpty(this.items);
 }

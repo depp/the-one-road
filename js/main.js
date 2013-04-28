@@ -45,7 +45,7 @@ function initGame() {
 }
 
 main.newGame = function() {
-    var state = new State();
+    state = new State();
     main.screen = new BattleScreen(state);
 }
 

@@ -147,22 +147,20 @@ BSBox.prototype.draw = function(bs) {
 	     this.lines, null, 'center');
 }
 
-function BSPlayer(x, y, state) {
+function BSPlayer(x, y) {
     this.x = x;
     this.y = y;
     this.layer = 0;
     this.sprite = 'player_battle';
-    this.state = state;
 }
 
 BSPlayer.prototype = new BSImage();
 
-function BSMonster(x, y, state) {
+function BSMonster(x, y) {
     this.x = x;
     this.y = y;
     this.layer = 0;
     this.sprite = 'gremlin'
-    this.state = state;
 
     this.attack = 2;
     this.defense = 0;
@@ -173,9 +171,7 @@ BSMonster.prototype = new BSImage();
 
 // Battle Screen class
 
-function BattleScreen(state) {
-    this.state = state;
-
+function BattleScreen() {
     this.font = new Font('font1', '7x9sharp');
     this.sprites = new Sprites('sprites');
     this.menu = [];
@@ -184,8 +180,8 @@ function BattleScreen(state) {
     this.animation_finished = []
 
     this.sprite = {};
-    this.addSprite(new BSPlayer(485, 195, state), 'player');
-    this.addSprite(new BSMonster(82, 190, state), 'monster0');
+    this.addSprite(new BSPlayer(485, 195), 'player');
+    this.addSprite(new BSMonster(82, 190), 'monster0');
 
     this.player_action();
 }
@@ -298,10 +294,10 @@ BattleScreen.prototype.draw = function() {
     }
     var infow = 9*16, infox = 640 - 16 - infow;
     var info = [];
-    info.push('Level ' + this.state.level);
-    info.push('Health ' + this.state.hp + '/' + level_hp(this.state.level));
-    if (this.state.has_spells())
-	info.push('Mana ' + this.state.mp + '/' + level_mp(this.state.level));
+    info.push('Level ' + state.level);
+    info.push('Health ' + state.hp + '/' + level_hp(state.level));
+    if (!isObjectEmpty(state.spells))
+	info.push('Mana ' + state.mp + '/' + level_mp(state.level));
     text_box(this.sprites, this.font, infox, 16*17, infow, info);
 }
 
@@ -365,7 +361,7 @@ BattleScreen.prototype.act_attack = function() {
 }
 
 BattleScreen.prototype.act_spell = function() {
-    var spells = this.state.spells;
+    var spells = state.spells;
     var items = [];
     for (var i = 0; i < SPELLS.length; i++) {
 	var name = SPELLS[i];
@@ -408,9 +404,9 @@ BattleScreen.prototype.monster_action = function() {
 BattleScreen.prototype.player_action = function() {
     items = [];
     items.push({'title': 'Attack', 'action': this.act_attack});
-    if (this.state.has_spells())
+    if (!isObjectEmpty(state.spells))
 	items.push({'title': 'Spell', 'action': this.act_spell});
-    if (this.state.has_items())
+    if (!isObjectEmpty(state.items))
 	items.push({'title': 'Item', 'action': this.act_item});
     this.menu = [new Menu(this, items, this.sprites,
 			  this.font, 16*19-8, 16*17, 16*5)];
@@ -493,24 +489,24 @@ function atk_damage(atk, def, level) {
 // Player actions
 
 BSPlayer.prototype.get_attack = function() {
-    return SWORD_ATTACK[this.state.sword];
+    return SWORD_ATTACK[state.sword];
 }
 
 BSPlayer.prototype.get_defense = function() {
-    return ARMOR_DEFENSE[this.state.armor];
+    return ARMOR_DEFENSE[state.armor];
 }
 
 BSPlayer.prototype.get_attack_level = function() {
-    return this.state.level + DIFFICULTY_INFO[this.state.difficulty].plevel;
+    return state.level + DIFFICULTY_INFO[state.difficulty].plevel;
 }
 
 BSPlayer.prototype.damage = function(bs, amt) {
     return [
 	number_anim(this.x+8, this.y, format_number(-amt)),
 	function (frame) {
-	    this.state.hp -= amt;
-	    if (this.state.hp <= 0) {
-		this.state.hp = 0;
+	    state.hp -= amt;
+	    if (state.hp <= 0) {
+		state.hp = 0;
 		bs.queue_func(function() { this.end(false); });
 	    }
 	    return true;
@@ -529,7 +525,7 @@ BSMonster.prototype.get_defense = function() {
 }
 
 BSMonster.prototype.get_attack_level = function() {
-    return this.level + DIFFICULTY_INFO[this.state.difficulty].mlevel;
+    return this.level + DIFFICULTY_INFO[state.difficulty].mlevel;
 }
 
 BSMonster.prototype.damage = function(bs, amt) {
