@@ -140,10 +140,6 @@ BSPlayer.prototype.draw = function(bs) {
     bs.sprites.draw(this.x, this.y, 'player_battle', 1);
 }
 
-BSPlayer.prototype.damage = function(bs, amt) {
-    return number_anim(this.x+8, this.y, format_number(-amt));
-}
-
 function BSMonster(x, y) {
     this.x = x;
     this.y = y;
@@ -154,10 +150,6 @@ BSMonster.prototype = new BSSprite();
 
 BSMonster.prototype.draw = function(bs) {
     bs.sprites.draw(this.x, this.y, 'gremlin', 1);
-}
-
-BSMonster.prototype.damage = function(bs, amt) {
-    return number_anim(this.x, this.y, format_number(-amt));
 }
 
 // Battle Screen class
@@ -300,19 +292,19 @@ BattleScreen.prototype.keydown = function(code) {
 
 BattleScreen.prototype.keyup = function(code) { }
 
-BattleScreen.prototype.do_attack = function(actor, target) {
+BattleScreen.prototype.anim_attack = function(actor, target, amt) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
     tx += (ax < tx) ? -40 : +40;
-    this.animate([
+    return [
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
-	parallel_anim([target.damage(this, 50)]),
+	parallel_anim([target.damage(this, amt)]),
 	pause_anim(10),
 	actor.interp_anim(tx, ty, ax, ay, 10)
-    ])
+    ]
 }
 
-BattleScreen.prototype.do_spell = function(actor, target) {
+BattleScreen.prototype.anim_fireball = function(actor, target, amt) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
     ax += (ax < tx) ? +16 : -16;
@@ -323,14 +315,14 @@ BattleScreen.prototype.do_spell = function(actor, target) {
 	effect.interp_anim(ax, ay, tx, ty, 30, 'accel'),
 	effect.sprite_anim(2, 10, ['fire_2', 'fire_3']),
 	effect.remove_anim(),
-	target.damage(this, 50)
+	target.damage(this, -amt)
     ])
 }
 
-BattleScreen.prototype.do_item = function(actor) {
+BattleScreen.prototype.anim_sparkle = function(actor, amt) {
     var ax = actor.x, ay = actor.y;
     var sparkle = new BSEffect(ax, ay + 24, 'sparkle_1')
-    this.animate([
+    return [
 	sparkle.insert_anim(),
 	parallel_anim([
 	    sparkle.interp_anim(ax, ay + 24, ax, ay - 8, 30),
@@ -338,31 +330,30 @@ BattleScreen.prototype.do_item = function(actor) {
 	]),
 	parallel_anim([
 	    sparkle.sprite_anim(-1, 6, ['sparkle_1', 'sparkle_2'])
-	]),
-	actor.damage(this, -50)
-    ])
+	])
+    ]
 }
 
 BattleScreen.prototype.act_attack = function() {
     this.menu = null;
-    this.do_attack(this.sprite.player, this.sprite.monster0);
+    this.sprite.player.do_attack(this, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_spell = function() {
     this.menu = null;
-    this.do_spell(this.sprite.player, this.sprite.monster0);
+    this.sprite.player.do_spell(this, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_item = function() {
     this.menu = null;
-    this.do_item(this.sprite.player);
+    this.sprite.player.do_heal(this, this.sprite.player);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.monster_action = function() {
-    this.do_attack(this.sprite.monster0, this.sprite.player);
+    this.sprite.monster0.do_attack(this, this.sprite.player);
     this.queue_func(this.player_action);
 }
 
@@ -375,4 +366,53 @@ BattleScreen.prototype.player_action = function() {
 	items.push({'title': 'Item', 'action': this.act_item});
     this.menu = new Menu(this, items, this.sprites,
 			 this.font, 16*24, 16*17, 16*5);
+}
+
+var SWORD_ATTACK = [2, 4, 6, 10];
+var ARMOR_DEFENSE = [0, 2, 5, 8];
+
+function atk_damage(atk, def, level) {
+    if (def >= atk)
+	return 0;
+    return random(Math.ceil(level/2), level) * (atk - def);    
+}
+
+// Player actions
+
+BSPlayer.prototype.get_defense = function(bs) {
+    return ARMOR_DEFENSE[bs.state.armor];
+}
+
+BSPlayer.prototype.damage = function(bs, amt) {
+    return [
+	number_anim(this.x+8, this.y, format_number(-amt)),
+	function (frame) {
+	    this.state.hp -= amt;
+	    if (this.state.hp <= 0)
+		this.state.hp = 0;
+	    return true;
+	}
+    ]
+}
+
+BSPlayer.prototype.do_attack = function(bs, target) {
+    amt = atk_damage(SWORD_ATTACK[bs.state.sword],
+		     target.get_defense(bs),
+		     bs.state.get_attack_level());
+    bs.animate(bs.anim_attack(this, target, amt));
+}
+
+// Monster actions
+
+BSMonster.prototype.get_defense = function(bs) {
+    return 0;
+}
+
+BSMonster.prototype.damage = function(bs, amt) {
+    return number_anim(this.x, this.y, format_number(-amt));
+}
+
+BSMonster.prototype.do_attack = function(bs, target) {
+    amt = atk_damage(2, target.get_defense(bs), 5);
+    bs.animate(bs.anim_attack(this, target, amt));
 }

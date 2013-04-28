@@ -23,6 +23,7 @@ function State() {
     this.armor = 0;
     this.spells = {};
     this.items = {};
+    this.shield = false;
 }
 
 State.prototype.has_spells = function() {
@@ -31,4 +32,8 @@ State.prototype.has_spells = function() {
 
 State.prototype.has_items = function() {
     return !isObjectEmpty(this.items);
+}
+
+State.prototype.get_attack_level = function() {
+    return this.level + 10;
 }
