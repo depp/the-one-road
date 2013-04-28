@@ -5,6 +5,15 @@ function random(min, max) {
     return x >= max ? max : x;
 }
 
+function rand_message(list) {
+    if (list.length <= 1)
+	return list[0];
+    var x = Math.floor(Math.random() * list.length);
+    if (x >= list.length )
+	 x = list.length - 1;
+    return list[x];
+}
+
 function level_hp(level) {
     return 20 + 9*level + level*level;
 }
@@ -70,7 +79,8 @@ MONSTER_INFO = {
 	'level': 0,
 	'attack': 2,
 	'defense': 0,
-	'nx': 8
+	'nx': 8,
+	'xp': 75
     }
 }
 
@@ -101,3 +111,21 @@ function State() {
     this.items = {'potion': 5, 'ether': 2, 'elixir': 1, 'potato': 1};
     this.shield = false;
 }
+
+MSG_BATTLEWIN = [
+    "Victory is yours!",
+    "Monsters were defeated!",
+    "Onward ho!",
+    "That was easy enough!",
+    "You\u2013re a legend!",
+    "The hero marches on!"
+];
+
+MSG_BATTLELOSE = [
+    "Hero was defeated!",
+    "And so ends your story.",
+    "Another hero vanquished.",
+    "Try again in the next life.",
+    "Today was a good day to die.",
+    "It all ended right there."
+];

@@ -207,6 +207,7 @@ function BattleScreen(encounter) {
 	this.addSprite(new BSMonster(m[1], m[2], m[0]), 'monster' + i);
     }
     this.monster_count = einfo.length;
+    this.monster_alive = einfo.length;
 
     this.player_action();
 }
@@ -551,18 +552,16 @@ BattleScreen.prototype.end = function(did_win) {
     this.menu = [];
     this.animation_finished = [];
     if (did_win) {
-	var sprite = this.big_msg(["Defeated Gremlin"]);
+	var sprite = this.big_msg([rand_message(MSG_BATTLEWIN)]);
 	this.animate([
 	    sprite.insert_anim(),
 	    pause_anim(60)
-	    // sprite.remove_anim()
 	])
     } else {
-	var sprite = this.big_msg(["Hero was defeated!"]);
+	var sprite = this.big_msg([rand_message(MSG_BATTLELOSE)]);
 	this.sprite.player.sprite = 'player_dead';
 	this.animate([
 	    sprite.insert_anim(),
-	    pause_anim(60)
 	])
     }
 }
@@ -659,7 +658,9 @@ BSMonster.prototype.damage = function(bs, amt) {
     this.hp -= amt;
     if (this.hp <= 0) {
 	anim.push(this.remove_anim());
-	// FIXME push monster check
+	bs.monster_alive--;
+	if (!bs.monster_alive)
+	    bs.queue_func(function() { this.end(true); });
     } else if (amt < 0 && this.hp >= this.info.hp) {
 	this.hp = this.info.hp;
     }
