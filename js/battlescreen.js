@@ -385,6 +385,19 @@ BattleScreen.prototype.act_spell = function() {
 
 BattleScreen.prototype.act_spell_cast = function(name) {
     var info = SPELL_INFO[name];
+    if (info.cost > state.mp) {
+	var sprite = this.big_msg(["Not enough mana"]);
+	var menu = this.menu;
+	this.animate([
+	    function (frame) { this.menu = []; return true; },
+	    sprite.insert_anim(),
+	    pause_anim(60),
+	    sprite.remove_anim(),
+	    function (frame) { this.menu = menu; return true; }
+	])
+	return;
+    }
+    state.mp -= info.cost;
     this.menu = [];
     this.do_spell(name, this.sprite.player, [this.sprite.monster0]);
     this.queue_func(this.monster_action);
