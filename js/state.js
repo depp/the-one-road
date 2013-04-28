@@ -42,13 +42,34 @@ SPELL_INFO = {
     },
 }
 
+ITEMS = ['potion', 'ether', 'elixir', 'potato']
+ITEM_INFO = {
+    'potion': {
+	'name': 'Potion',
+	'hp': 50
+    },
+    'ether': {
+	'name': 'Ether',
+	'mp': 40
+    },
+    'elixir': {
+	'name': 'Elixir',
+	'hp': 200,
+	'mp': 75
+    },
+    'potato': {
+	'name': 'Potato'
+    }
+}
+
 MONSTER_INFO = {
     'gremlin': {
 	'sprite': 'gremlin',
 	'hp': 30,
 	'level': 0,
 	'attack': 2,
-	'defense': 0
+	'defense': 0,
+	'nx': 8
     }
 }
 
@@ -76,6 +97,6 @@ function State() {
     this.sword = 0;
     this.armor = 0;
     this.spells = {'arcane': true, 'fire': true, 'holy': true};
-    this.items = {'potion': 5, 'elixir': 1, 'potato': 1};
+    this.items = {'potion': 5, 'ether': 2, 'elixir': 1, 'potato': 1};
     this.shield = false;
 }

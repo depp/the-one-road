@@ -19,16 +19,6 @@ function format_number(x) {
     return '0';
 }
 
-function number_anim(x, y, text) {
-    var sprite = new BSText(x, y, text);
-    return [
-	sprite.insert_anim(),
-	sprite.interp_anim(x, y + 20, x, y - 8, 20, 'decel'),
-	pause_anim(20),
-	sprite.remove_anim()
-    ]
-}
-
 function BSSprite() { }
 
 BSSprite.prototype.interp = function(x1, y1, x2, y2, t, type) {
@@ -85,6 +75,33 @@ BSSprite.prototype.remove_anim = function() {
 	this.removeSprite(spr);
 	return true;
     }
+}
+
+BSSprite.prototype.number_anim = function(x, y, text) {
+    x += this.x + this.nx;
+    y += this.y + this.ny;
+    var sprite = new BSText(x, y, text);
+    return [
+	sprite.insert_anim(),
+	sprite.interp_anim(x, y + 20, x, y - 8, 20, 'decel'),
+	pause_anim(20),
+	sprite.remove_anim()
+    ]
+}
+
+BSSprite.prototype.sparkle_anim = function(type) {
+    var ax = this.x, ay = this.y;
+    var sparkle = new BSEffect(ax, ay + 16, type + '_1')
+    return [
+	sparkle.insert_anim(),
+	parallel_anim([
+	    sparkle.interp_anim(ax, ay + 16, ax, ay - 8, 30),
+	    sparkle.remove_anim()
+	]),
+	parallel_anim([
+	    sparkle.sprite_anim(-1, 6, [type + '_1', type + '_2'])
+	])
+    ]
 }
 
 function BSImage() { }
@@ -152,6 +169,8 @@ function BSPlayer(x, y) {
     this.y = y;
     this.layer = 0;
     this.sprite = 'player_battle';
+    this.nx = 8;
+    this.ny = 0;
 }
 
 BSPlayer.prototype = new BSImage();
@@ -163,6 +182,8 @@ function BSMonster(x, y, type) {
     this.layer = 0;
     this.sprite = this.info.sprite;
     this.hp = this.info.hp;
+    this.nx = 'nx' in this.info ? this.info.nx : 0;
+    this.ny = 'ny' in this.info ? this.info.ny : 0;
 }
 
 BSMonster.prototype = new BSImage();
@@ -316,7 +337,7 @@ BattleScreen.prototype.menu_pop = function() {
     this.menu.pop();
 }
 
-BattleScreen.prototype.anim_attack = function(actor, target, amt) {
+BattleScreen.prototype.do_attack1 = function(actor, target, amt) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
     tx += (ax < tx) ? -40 : +40;
@@ -328,7 +349,7 @@ BattleScreen.prototype.anim_attack = function(actor, target, amt) {
     ]
 }
 
-BattleScreen.prototype.anim_bolt = function(actor, target, type, amt, dy) {
+BattleScreen.prototype.do_bolt = function(actor, target, type, amt, dy) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
     ay += dy * 8;
@@ -341,21 +362,6 @@ BattleScreen.prototype.anim_bolt = function(actor, target, type, amt, dy) {
 	effect.sprite_anim(2, 10, [type + '_2', type + '_3']),
 	effect.remove_anim(),
 	target.damage(this, amt)
-    ]
-}
-
-BattleScreen.prototype.anim_sparkle = function(actor, amt) {
-    var ax = actor.x, ay = actor.y;
-    var sparkle = new BSEffect(ax, ay + 24, 'sparkle_1')
-    return [
-	sparkle.insert_anim(),
-	parallel_anim([
-	    sparkle.interp_anim(ax, ay + 24, ax, ay - 8, 30),
-	    sparkle.remove_anim()
-	]),
-	parallel_anim([
-	    sparkle.sprite_anim(-1, 6, ['sparkle_1', 'sparkle_2'])
-	])
     ]
 }
 
@@ -381,7 +387,7 @@ BattleScreen.prototype.act_attack = function() {
 
 BattleScreen.prototype.act_attack1 = function(target) {
     this.menu = [];
-    this.do_attack(this.sprite.player, target);
+    this.animate(this.do_attack(this.sprite.player, target));
     this.queue_func(this.monster_action);
 }
 
@@ -426,7 +432,6 @@ BattleScreen.prototype.act_spell_cast = function(name) {
     if (info.area || targets.length <= 1) {
 	this.act_spell_cast1(name, targets);
     } else {
-	console.log('select spell target');
 	this.menu.push(new BSTargetSelect(
 	    this,
 	    function (target) { this.act_spell_cast1(name, [target]); },
@@ -438,13 +443,66 @@ BattleScreen.prototype.act_spell_cast1 = function(name, targets) {
     var info = SPELL_INFO[name];
     state.mp -= info.cost;
     this.menu = [];
-    this.do_spell(name, this.sprite.player, targets);
+    this.animate(this.do_spell(name, this.sprite.player, targets));
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_item = function() {
+    var items = state.items;
+    var mitems = [];
+    for (var i = 0; i < ITEMS.length; i++) {
+	var name = ITEMS[i];
+	if (!items[name])
+	    continue;
+	var info = ITEM_INFO[name];
+	mitems.push({
+	    'title': items[name].toString() + '  ' + info.name,
+	    'action': (function(name) {
+		return function() { this.act_item1(name); }
+	    })(name)
+	})
+    }
+    if (mitems.length == 1) {
+	mitems[0].action.call(this);
+    } else {
+	this.menu.push(new Menu(this, mitems, this.sprites,
+				this.font, 16*19, 16*17 + 8, 16*6));
+    }
+}
+
+BattleScreen.prototype.act_item1 = function(name) {
+    var info = ITEM_INFO[name];
     this.menu = [];
-    this.sprite.player.do_heal(this, this.sprite.player);
+    var anim = [this.attack_msg([info.name])];
+    if (!--state.items[name])
+	delete state.items[name];
+    var player = this.sprite.player;
+    var both = info.hp && info.mp;
+
+    if (info.hp) {
+	state.hp = Math.min(level_hp(state.level), info.hp);
+	anim.push(parallel_anim([
+	    player.number_anim(
+		0, both ? -12 : 0,
+		format_number(info.hp) + (both ? ' HP' : ''))
+	]));
+	anim.push(parallel_anim([
+	    player.sparkle_anim('sparkle')
+	]));
+    }
+    if (info.mp) {
+	state.mp = Math.min(level_mp(state.level), info.mp);
+	anim.push(parallel_anim([
+	    pause_anim(both ? 5 : 0),
+	    player.number_anim(
+		0, 0, format_number(info.mp) + ' MP')
+	]))
+	anim.push(parallel_anim([
+	    pause_anim(both ? 15 : 0),
+	    player.sparkle_anim('sparklemp')
+	]));
+    }
+    this.animate(anim);
     this.queue_func(this.monster_action);
 }
 
@@ -457,7 +515,7 @@ BattleScreen.prototype.monster_action = function() {
 	monsters.push(this.sprite[name]);
     }
     var actor = monsters[random(0, monsters.length - 1)];
-    this.do_attack(actor, this.sprite.player);
+    this.animate(this.do_attack(actor, this.sprite.player));
     this.queue_func(this.player_action);
 }
 
@@ -510,9 +568,7 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     var amt = atk_damage(actor.get_attack(),
 			 target.get_defense(),
 			 actor.get_attack_level());
-    this.animate(
-	this.anim_attack(actor, target, amt)
-    )
+    return this.do_attack1(actor, target, amt);
 }
 
 BattleScreen.prototype.do_spell = function(name, actor, targets) {
@@ -533,10 +589,10 @@ BattleScreen.prototype.do_spell = function(name, actor, targets) {
 	    actor.get_attack_level());
 	anim.push(parallel_anim([
 	    pause_anim(i * 8),
-	    this.anim_bolt(actor, target, name, amt, 2*i - targets.length),
+	    this.do_bolt(actor, target, name, amt, 2*i - targets.length),
 	]))
     }
-    this.animate(anim);
+    return anim;
 }
 
 var SWORD_ATTACK = [2, 4, 6, 10];
@@ -569,7 +625,7 @@ BSPlayer.prototype.get_attack_level = function() {
 
 BSPlayer.prototype.damage = function(bs, amt) {
     return [
-	number_anim(this.x+8, this.y, format_number(-amt)),
+	this.number_anim(0, 0, format_number(-amt)),
 	function (frame) {
 	    state.hp -= amt;
 	    if (state.hp <= 0) {
@@ -596,7 +652,7 @@ BSMonster.prototype.get_attack_level = function() {
 }
 
 BSMonster.prototype.damage = function(bs, amt) {
-    var anim = [number_anim(this.x, this.y, format_number(-amt))];
+    var anim = [this.number_anim(0, 0, format_number(-amt))];
     this.hp -= amt;
     if (this.hp <= 0) {
 	anim.push(this.remove_anim());
