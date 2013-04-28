@@ -147,20 +147,26 @@ BSBox.prototype.draw = function(bs) {
 	     this.lines, null, 'center');
 }
 
-function BSPlayer(x, y) {
+function BSPlayer(x, y, state) {
     this.x = x;
     this.y = y;
     this.layer = 0;
     this.sprite = 'player_battle';
+    this.state = state;
 }
 
 BSPlayer.prototype = new BSImage();
 
-function BSMonster(x, y) {
+function BSMonster(x, y, state) {
     this.x = x;
     this.y = y;
     this.layer = 0;
-    this.sprite = 'gremlin';
+    this.sprite = 'gremlin'
+    this.state = state;
+
+    this.attack = 2;
+    this.defense = 0;
+    this.level = 5;
 }
 
 BSMonster.prototype = new BSImage();
@@ -178,8 +184,8 @@ function BattleScreen(state) {
     this.animation_finished = []
 
     this.sprite = {};
-    this.addSprite(new BSPlayer(485, 195), 'player');
-    this.addSprite(new BSMonster(82, 190), 'monster0');
+    this.addSprite(new BSPlayer(485, 195, state), 'player');
+    this.addSprite(new BSMonster(82, 190, state), 'monster0');
 
     this.player_action();
 }
@@ -354,7 +360,7 @@ BattleScreen.prototype.anim_sparkle = function(actor, amt) {
 
 BattleScreen.prototype.act_attack = function() {
     this.menu = [];
-    this.sprite.player.do_attack(this, this.sprite.monster0);
+    this.do_attack(this.sprite.player, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
@@ -368,7 +374,9 @@ BattleScreen.prototype.act_spell = function() {
 	var info = SPELL_INFO[name];
 	items.push({
 	    'title': info.name + ' [' + info.cost + ']',
-	    'action': this['act_spell_' + name]
+	    'action': (function(name) {
+		return function() { this.act_spell_cast(name); }
+	    })(name)
 	})
     }
     if (items.length == 1) {
@@ -379,21 +387,10 @@ BattleScreen.prototype.act_spell = function() {
     }
 }
 
-BattleScreen.prototype.act_spell_arcane = function() {
+BattleScreen.prototype.act_spell_cast = function(name) {
+    var info = SPELL_INFO[name];
     this.menu = [];
-    this.sprite.player.do_spell_arcane(this, this.sprite.monster0);
-    this.queue_func(this.monster_action);
-}
-
-BattleScreen.prototype.act_spell_fire = function() {
-    this.menu = [];
-    this.sprite.player.do_spell_fire(this, this.sprite.monster0);
-    this.queue_func(this.monster_action);
-}
-
-BattleScreen.prototype.act_spell_holy = function() {
-    this.menu = [];
-    this.sprite.player.do_spell_holy(this, this.sprite.monster0);
+    this.do_spell(name, this.sprite.player, [this.sprite.monster0]);
     this.queue_func(this.monster_action);
 }
 
@@ -404,7 +401,7 @@ BattleScreen.prototype.act_item = function() {
 }
 
 BattleScreen.prototype.monster_action = function() {
-    this.sprite.monster0.do_attack(this, this.sprite.player);
+    this.do_attack(this.sprite.monster0, this.sprite.player);
     this.queue_func(this.player_action);
 }
 
@@ -445,6 +442,7 @@ BattleScreen.prototype.end = function(did_win) {
 	])
     } else {
 	var sprite = this.big_msg(["Hero was defeated!"]);
+	this.sprite.player.sprite = 'player_dead';
 	this.animate([
 	    sprite.insert_anim(),
 	    pause_anim(60)
@@ -452,10 +450,37 @@ BattleScreen.prototype.end = function(did_win) {
     }
 }
 
+BattleScreen.prototype.do_attack = function(actor, target) {
+    var amt = atk_damage(actor.get_attack(),
+			 target.get_defense(),
+			 actor.get_attack_level());
+    this.animate(
+	this.anim_attack(actor, target, amt)
+    )
+}
+
+BattleScreen.prototype.do_spell = function(name, actor, targets) {
+    var info = SPELL_INFO[name];
+    var anim = [this.attack_msg([info.name])];
+    for (var i = 0; i < targets.length; i++) {
+	var target = targets[i];
+	var amt = atk_damage(
+	    info.attack,
+	    target.get_defense() - info.penetration,
+	    actor.get_attack_level());
+	anim.push(parallel_anim([
+	    pause_anim(i * 4),
+	    this.anim_bolt(actor, target, name, amt),
+	]))
+    }
+    this.animate(anim);
+}
+
 var SWORD_ATTACK = [2, 4, 6, 10];
 var ARMOR_DEFENSE = [0, 2, 5, 8];
 
 function atk_damage(atk, def, level) {
+    // console.log('attack: ATK=' + atk + ', DEF=' + def + ', LEVEL=' + level);
     if (atk < 0)
 	atk = 0;
     if (def < 0)
@@ -467,8 +492,16 @@ function atk_damage(atk, def, level) {
 
 // Player actions
 
-BSPlayer.prototype.get_defense = function(bs) {
-    return ARMOR_DEFENSE[bs.state.armor];
+BSPlayer.prototype.get_attack = function() {
+    return SWORD_ATTACK[this.state.sword];
+}
+
+BSPlayer.prototype.get_defense = function() {
+    return ARMOR_DEFENSE[this.state.armor];
+}
+
+BSPlayer.prototype.get_attack_level = function() {
+    return this.state.level + DIFFICULTY_INFO[this.state.difficulty].plevel;
 }
 
 BSPlayer.prototype.damage = function(bs, amt) {
@@ -485,56 +518,22 @@ BSPlayer.prototype.damage = function(bs, amt) {
     ]
 }
 
-BSPlayer.prototype.do_attack = function(bs, target) {
-    amt = atk_damage(SWORD_ATTACK[bs.state.sword],
-		     target.get_defense(bs),
-		     bs.state.get_attack_level());
-    bs.animate(bs.anim_attack(this, target, amt));
-}
-
-BSPlayer.prototype.do_spell_arcane = function(bs, target) {
-    amt = atk_damage(4,
-		     target.get_defense(bs) - 4,
-		     bs.state.get_attack_level());
-    bs.animate([
-	bs.attack_msg([SPELL_INFO.arcane.name]),
-	bs.anim_bolt(this, target, 'arcane', amt)
-    ])
-}
-
-BSPlayer.prototype.do_spell_fire = function(bs, target) {
-    amt = atk_damage(3,
-		     target.get_defense(bs),
-		     bs.state.get_attack_level());
-    bs.animate([
-	bs.attack_msg([SPELL_INFO.fire.name]),
-	bs.anim_bolt(this, target, 'fire', amt)
-    ]);
-}
-
-BSPlayer.prototype.do_spell_holy = function(bs, target) {
-    amt = atk_damage(12,
-		     target.get_defense(bs) - 8,
-		     bs.state.get_attack_level());
-    bs.animate([
-	bs.attack_msg([SPELL_INFO.holy.name]),
-	bs.anim_bolt(this, target, 'holy', amt)
-    ]);
-}
-
 // Monster actions
 
-BSMonster.prototype.get_defense = function(bs) {
-    return 0;
+BSMonster.prototype.get_attack = function() {
+    return this.attack;
+}
+
+BSMonster.prototype.get_defense = function() {
+    return this.defense;
+}
+
+BSMonster.prototype.get_attack_level = function() {
+    return this.level + DIFFICULTY_INFO[this.state.difficulty].mlevel;
 }
 
 BSMonster.prototype.damage = function(bs, amt) {
     return number_anim(this.x, this.y, format_number(-amt));
-}
-
-BSMonster.prototype.do_attack = function(bs, target) {
-    amt = atk_damage(2, target.get_defense(bs), 5);
-    bs.animate(bs.anim_attack(this, target, amt));
 }
 
 // Target selection menu

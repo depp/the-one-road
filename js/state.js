@@ -19,19 +19,35 @@ SPELLS = ['arcane', 'fire', 'holy']
 SPELL_INFO = {
     'arcane': {
 	'name': 'Arcane Bolt',
-	'cost': 2
+	'cost': 2,
+	'attack': 4,
+	'penetration': 4,
+	'area': false
     },
     'fire': {
 	'name': 'Fireball',
-	'cost': 5
+	'cost': 5,
+	'attack': 3,
+	'penetration': 0,
+	'area': true
     },
     'holy': {
 	'name': 'Light of Heaven',
-	'cost': 25
-    }
+	'cost': 25,
+	'attack': 12,
+	'penetration': 8,
+	'area': false
+    },
 }	
 
+var DIFFICULTY_INFO = [
+    { 'plevel': 15, 'mlevel': 0 },
+    { 'plevel': 10, 'mlevel': 0 },
+    { 'plevel': 5, 'mlevel': 0 }
+]
+
 function State() {
+    this.difficulty = 1;
     this.level = 1;
     this.hp = level_hp(1);
     this.mp = level_mp(1);
@@ -48,8 +64,4 @@ State.prototype.has_spells = function() {
 
 State.prototype.has_items = function() {
     return !isObjectEmpty(this.items);
-}
-
-State.prototype.get_attack_level = function() {
-    return this.level + 10;
 }
