@@ -328,9 +328,10 @@ BattleScreen.prototype.anim_attack = function(actor, target, amt) {
     ]
 }
 
-BattleScreen.prototype.anim_bolt = function(actor, target, type, amt) {
+BattleScreen.prototype.anim_bolt = function(actor, target, type, amt, dy) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
+    ay += dy * 8;
     ax += (ax < tx) ? +16 : -16;
     var effect = new BSEffect(ax, ay, type + '_1');
     return [
@@ -421,9 +422,23 @@ BattleScreen.prototype.act_spell_cast = function(name) {
 	])
 	return;
     }
+    var targets = this.list_targets();
+    if (info.area || targets.length <= 1) {
+	this.act_spell_cast1(name, targets);
+    } else {
+	console.log('select spell target');
+	this.menu.push(new BSTargetSelect(
+	    this,
+	    function (target) { this.act_spell_cast1(name, [target]); },
+	    targets));
+    }
+}
+
+BattleScreen.prototype.act_spell_cast1 = function(name, targets) {
+    var info = SPELL_INFO[name];
     state.mp -= info.cost;
     this.menu = [];
-    this.do_spell(name, this.sprite.player, [this.sprite.monster0]);
+    this.do_spell(name, this.sprite.player, targets);
     this.queue_func(this.monster_action);
 }
 
@@ -434,7 +449,15 @@ BattleScreen.prototype.act_item = function() {
 }
 
 BattleScreen.prototype.monster_action = function() {
-    this.do_attack(this.sprite.monster0, this.sprite.player);
+    var monsters = [];
+    for (var i = 0; i < this.monster_count; i++) {
+	var name = 'monster' + i;
+	if (!(name in this.sprite))
+	    continue;
+	monsters.push(this.sprite[name]);
+    }
+    var actor = monsters[random(0, monsters.length - 1)];
+    this.do_attack(actor, this.sprite.player);
     this.queue_func(this.player_action);
 }
 
@@ -493,6 +516,13 @@ BattleScreen.prototype.do_attack = function(actor, target) {
 }
 
 BattleScreen.prototype.do_spell = function(name, actor, targets) {
+    targets.sort(function(x, y) {
+	if (x.y < y.y)
+	    return -1;
+	if (x.y > y.y)
+	    return 1;
+	return x.name < y.name ? -1 : 1;
+    })
     var info = SPELL_INFO[name];
     var anim = [this.attack_msg([info.name])];
     for (var i = 0; i < targets.length; i++) {
@@ -502,8 +532,8 @@ BattleScreen.prototype.do_spell = function(name, actor, targets) {
 	    target.get_defense() - info.penetration,
 	    actor.get_attack_level());
 	anim.push(parallel_anim([
-	    pause_anim(i * 4),
-	    this.anim_bolt(actor, target, name, amt),
+	    pause_anim(i * 8),
+	    this.anim_bolt(actor, target, name, amt, 2*i - targets.length),
 	]))
     }
     this.animate(anim);
@@ -596,5 +626,6 @@ BSTargetSelect.prototype.draw = function(active) {
 }
 
 BSTargetSelect.prototype.do_action = function() {
+    console.log(this.action);
     this.action.call(this.obj, this.items[this.selected]);
 }
