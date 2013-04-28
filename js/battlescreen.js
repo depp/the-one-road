@@ -183,7 +183,7 @@ function BSPlayer(x, y) {
 
 BSPlayer.prototype = new BSImage();
 
-function BSMonster(x, y, type) {
+function BSMonster(x, y, type, row) {
     this.info = MONSTER_INFO[type];
     this.x = x;
     this.y = y;
@@ -192,6 +192,7 @@ function BSMonster(x, y, type) {
     this.hp = this.info.hp;
     this.nx = 'nx' in this.info ? this.info.nx : 0;
     this.ny = 'ny' in this.info ? this.info.ny : 0;
+    this.row = row;
 }
 
 BSMonster.prototype = new BSImage();
@@ -211,7 +212,9 @@ function BattleScreen(encounter) {
     this.addSprite(new BSPlayer(485, 195), 'player');
     for (var i = 0; i < einfo.monsters.length; i++) {
 	var m = einfo.monsters[i];
-	this.addSprite(new BSMonster(m[1], m[2], m[0]), 'monster' + i);
+	var row = m.length < 4 ? 0 : m[3];
+	this.addSprite(new BSMonster(m[1], m[2], m[0], row),
+		       'monster' + i);
     }
     this.monster_count = einfo.monsters.length;
     this.monster_alive = einfo.monsters.length;
@@ -374,19 +377,25 @@ BattleScreen.prototype.do_bolt = function(actor, target, type, amt, dy) {
     ]
 }
 
-BattleScreen.prototype.list_targets = function() {
-    var targets = [];
-    for (var i = 0; i < this.monster_count; i++) {
-	var name = 'monster' + i;
-	if (!(name in this.sprite))
-	    continue;
-	targets.push(this.sprite[name]);
+BattleScreen.prototype.list_targets = function(ranged) {
+    for (var row = 0; row < 3; row++) {
+	var targets = [];
+	for (var i = 0; i < this.monster_count; i++) {
+	    var name = 'monster' + i;
+	    if (!(name in this.sprite))
+		continue;
+	    var spr = this.sprite[name];
+	    if (ranged || spr.row == row)
+		targets.push(spr);
+	}
+	if (ranged || targets.length)
+	    return targets;
     }
     return targets;
 }
 
 BattleScreen.prototype.act_attack = function() {
-    var targets = this.list_targets();
+    var targets = this.list_targets(false);
     if (targets.length > 1) {
 	this.menu.push(new BSTargetSelect(this, this.act_attack1, targets));
     } else {
@@ -436,7 +445,7 @@ BattleScreen.prototype.act_spell_cast = function(name) {
 	])
 	return;
     }
-    var targets = this.list_targets();
+    var targets = this.list_targets(true);
     if (info.area || targets.length <= 1) {
 	this.act_spell_cast1(name, targets);
     } else {
@@ -511,7 +520,7 @@ BattleScreen.prototype.act_item1 = function(name) {
 	]));
     }
     if (name == 'potato') {
-	anim.push(this.do_spell('holy', player, this.list_targets()));
+	anim.push(this.do_spell('holy', player, this.list_targets(true)));
     }
     this.animate(anim);
     this.queue_func(this.monster_action);
@@ -525,9 +534,20 @@ BattleScreen.prototype.monster_action = function() {
 	    continue;
 	monsters.push(this.sprite[name]);
     }
-    var actor = monsters[random(0, monsters.length - 1)];
+    var count = 1 + Math.floor(monsters.length / 2);
+    this.ma_count = count;
+    this.ma_array = monsters;
+    this.monster_action1();
+}
+
+BattleScreen.prototype.monster_action1 = function() {
+    var actor = this.ma_array.splice(
+	random(0, this.ma_array.length - 1), 1)[0];
     this.animate(this.do_attack(actor, this.sprite.player));
-    this.queue_func(this.player_action);
+    if (--this.ma_count)
+	this.queue_func(this.monster_action1);
+    else
+	this.queue_func(this.player_action);
 }
 
 BattleScreen.prototype.player_action = function() {

@@ -29,7 +29,7 @@ function level_xp(level) {
 }
 
 var SWORD_ATTACK = [2, 4, 6, 10];
-var ARMOR_DEFENSE = [0, 2, 5, 8];
+var ARMOR_DEFENSE = [0, 1, 2, 4];
 
 SWORD_INFO = [
     {
@@ -72,8 +72,8 @@ SPELL_INFO = {
     'arcane': {
 	'name': 'Arcane Bolt',
 	'cost': 2,
-	'attack': 4,
-	'penetration': 4,
+	'attack': 5,
+	'penetration': 5,
 	'area': false,
 	'gp': 30,
     },
@@ -81,7 +81,7 @@ SPELL_INFO = {
 	'name': 'Fireball',
 	'cost': 5,
 	'attack': 3,
-	'penetration': 0,
+	'penetration': 3,
 	'area': true,
 	'gp': 35
     },
@@ -121,30 +121,97 @@ ITEM_INFO = {
 }
 
 MONSTER_INFO = {
-    'gremlin': {
-	'sprite': 'gremlin',
+    'rat': {
+	'sprite': 'rat',
 	'hp': 30,
 	'level': 0,
 	'attack': 2,
-	'defense': 0,
+	'defense': 0
+    },
+    'gremlin': {
+	'sprite': 'gremlin',
+	'hp': 75,
+	'level': 3,
+	'attack': 3,
+	'defense': 3,
 	'nx': 8
+    },
+    'gremlinking': {
+	'sprite': 'gremlin-king',
+	'hp': 200,
+	'level': 6,
+	'attack': 6,
+	'defense': 1,
+	'nx': 8
+    },
+    'boss': {
+	'sprite': 'boss',
+	'hp': 750,
+	'level': 12,
+	'attack': 8,
+	'defense': 4,
     }
 }
 
-ENCOUNTERS = ['gremlin1', 'gremlin2']
+ENCOUNTERS = ['rat1', 'rat2', 'gremlin1', 'gremlin2',
+	      'king1', 'king2', 'king3', 'boss']
 ENCOUNTER_INFO = {
+    'rat1': {
+	'monsters': [
+	    ['rat', 82, 190]
+	],
+	'xp': 75
+    },
+    'rat2': {
+	'monsters': [
+	    ['rat', 82, 160],
+	    ['rat', 100, 210]
+	],
+	'xp': 175
+    },
     'gremlin1': {
 	'monsters': [
 	    ['gremlin', 82, 190]
 	],
-	'xp': 75
+	'xp': 125
     },
     'gremlin2': {
 	'monsters': [
 	    ['gremlin', 82, 160],
-	    ['gremlin', 100, 210]
+	    ['gremlin', 100, 210],
+	    ['gremlin', 86, 260]
 	],
-	'xp': 175
+	'xp': 200
+    },
+    'king1': {
+	'monsters': [
+	    ['gremlinking', 82, 190]
+	],
+	'xp': 400
+    },
+    'king2': {
+	'monsters': [
+	    ['gremlinking', 82, 210, 1],
+	    ['gremlin', 110, 160],
+	    ['gremlin', 140, 220],
+	    ['gremlin', 110, 280]
+	],
+	'xp': 550
+    },
+    'king3': {
+	'monsters': [
+	    ['gremlinking', 72, 250, 1],
+	    ['gremlinking', 76, 170, 1],
+	    ['gremlinking', 130, 180],
+	    ['gremlinking', 145, 240]
+	],
+	'xp': 800,
+    },
+    'boss': {
+	'monsters': [
+	    ['boss', 82, 210],
+	],
+	'xp': 1500
     },
 }
 
