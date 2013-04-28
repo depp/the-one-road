@@ -114,13 +114,29 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	fw * scale, edge * scale);
 }
 
-function text_box(spr, font, x, y, w, lines, selection)
+function text_box(spr, font, x, y, w, lines, selection, align)
 {
+    var xpos;
+    switch (align) {
+    default:
+    case 'left':
+	xpos = x + 16;
+	break;
+
+    case 'center':
+	xpos = x + Math.floor(w / 2);
+	break;
+
+    case 'right':
+	xpos = x + w - 16;
+	break;
+    }
+
     spr.drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
     for (var i = 0; i < lines.length; i++) {
 	var line = lines[i];
-	font.drawLine(x + 16, y + 20 + i*16, line, 1);
+	font.drawLine(xpos, y + 20 + i*16, line, 1, align);
     }
-    if (selection !== undefined)
+    if (selection || selection === 0)
 	spr.draw(x - 2, y + 8 + selection*16, 'Hand', 1);
 }

@@ -31,17 +31,51 @@ function Font(imgname, descname) {
     this.descname = descname;
 }
 
-Font.prototype.drawLine = function(x, y, text, scale) {
-    x = Math.round(x);
-    y = Math.round(y);
+Font.prototype.lineLength = function(text) {
+    var desc = font_desc[this.descname];
+    if (!desc)
+	return 0;
+
+    var xpos = 0;
+    var kern = null;
+    var charmap = desc.charmap;
+    var glyphs = desc.glyphs;
+    for (var i = 0; i < text.length; i++) {
+	var c = text[i];
+	if (!(c in charmap))
+	    continue;
+	var g = charmap[c];
+	if (kern && g in kern)
+	    xpos += kern[g];
+	var gd = glyphs[g];
+	kern = gd[5];
+	xpos += gd[2] + 1;
+    }
+    return xpos;
+}
+
+Font.prototype.drawLine = function(x, y, text, scale, align) {
     var img = font_images[this.imgname];
     var desc = font_desc[this.descname];
     if (img === null || desc === null)
 	return;
+
+    var xoff = 0;
+    switch (align) {
+    case 'right':
+	xoff = -this.lineLength(text)*scale;
+	break;
+    case 'center':
+	xoff = Math.floor(-this.lineLength(text)*scale/2);
+	break;
+    }
+    x = Math.round(x);
+    y = Math.round(y);
+
     var cxt = main.cxt;
     var glyphs = desc.glyphs;
     var charmap = desc.charmap;
-    var xpos = x;
+    var xpos = x + xoff;
     var kern = null;
     for (var i = 0; i < text.length; i++) {
 	var c = text[i];

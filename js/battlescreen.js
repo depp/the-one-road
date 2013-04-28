@@ -128,6 +128,21 @@ BSText.prototype.draw = function(bs) {
     bs.font.drawLine(this.x, this.y, this.text, 1);
 }
 
+function BSBox(x, y, width, lines) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.lines = lines;
+    this.layer = 1;
+}
+
+BSBox.prototype = new BSSprite();
+
+BSBox.prototype.draw = function(bs) {
+    text_box(bs.sprites, bs.font, this.x, this.y, this.width,
+	     this.lines, null, 'center');
+}
+
 function BSPlayer(x, y) {
     this.x = x;
     this.y = y;
@@ -368,6 +383,19 @@ BattleScreen.prototype.player_action = function() {
 			 this.font, 16*24, 16*17, 16*5);
 }
 
+BattleScreen.prototype.end = function(did_win) {
+    this.menu = null;
+    this.animation_finished = [];
+    var w = 320, h = 32, y = 16*17;
+    var sprite = new BSBox((640 - w) / 2, y, w,
+			   ["Defeated Gremlin"]);
+    this.animate([
+	sprite.insert_anim(),
+	pause_anim(60)
+	// sprite.remove_anim()
+    ])
+}
+
 var SWORD_ATTACK = [2, 4, 6, 10];
 var ARMOR_DEFENSE = [0, 2, 5, 8];
 
@@ -388,8 +416,10 @@ BSPlayer.prototype.damage = function(bs, amt) {
 	number_anim(this.x+8, this.y, format_number(-amt)),
 	function (frame) {
 	    this.state.hp -= amt;
-	    if (this.state.hp <= 0)
+	    if (this.state.hp <= 0) {
 		this.state.hp = 0;
+		bs.queue_func(function() { this.end(false); });
+	    }
 	    return true;
 	}
     ]
