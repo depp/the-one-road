@@ -75,7 +75,7 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	    y + (edge + fh * yi) * scale,
 	    edge, fh * scale);
 	cxt.drawImage(
-	    img, sw - edge, sy + edge, edge, fh,
+	    img, sx + sw - edge, sy + edge, edge, fh,
 	    x + (edge + fw * nw) * scale,
 	    y + (edge + fh * yi) * scale,
 	    edge * scale, fh * scale);
@@ -87,7 +87,7 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	    y,
 	    fw * scale, edge * scale);
 	cxt.drawImage(
-	    img, sx + edge, sh - edge, fw, edge,
+	    img, sx + edge, sy + sh - edge, fw, edge,
 	    x + (edge + fw * xi) * scale,
 	    y + (edge + fh * nh) * scale,
 	    fw * scale, edge * scale);
@@ -98,17 +98,17 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	y,
 	fw * scale, edge * scale);
     cxt.drawImage(
-	img, sx, sh - edge, edge, edge,
+	img, sx, sy + sh - edge, edge, edge,
 	x,
 	y + (edge + fh * nh) * scale,
 	fw * scale, edge * scale);
     cxt.drawImage(
-	img, sw - edge, sy, edge, edge,
+	img, sx + sw - edge, sy, edge, edge,
 	x + (edge + fw * nw) * scale,
 	y,
 	fw * scale, edge * scale);
     cxt.drawImage(
-	img, sw - edge, sh - edge, edge, edge,
+	img, sx + sw - edge, sy + sh - edge, edge, edge,
 	x + (edge + fw * nw) * scale,
 	y + (edge + fh * nh) * scale,
 	fw * scale, edge * scale);
