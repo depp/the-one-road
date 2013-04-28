@@ -162,6 +162,7 @@ function BSMonster(x, y, type) {
     this.y = y;
     this.layer = 0;
     this.sprite = this.info.sprite;
+    this.hp = this.info.hp;
 }
 
 BSMonster.prototype = new BSImage();
@@ -565,7 +566,15 @@ BSMonster.prototype.get_attack_level = function() {
 }
 
 BSMonster.prototype.damage = function(bs, amt) {
-    return number_anim(this.x, this.y, format_number(-amt));
+    var anim = [number_anim(this.x, this.y, format_number(-amt))];
+    this.hp -= amt;
+    if (this.hp <= 0) {
+	anim.push(this.remove_anim());
+	// FIXME push monster check
+    } else if (amt < 0 && this.hp >= this.info.hp) {
+	this.hp = this.info.hp;
+    }
+    return anim;
 }
 
 // Target selection menu
