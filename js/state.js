@@ -176,6 +176,51 @@ State.prototype.gen_next_encounter = function() {
     this.next_encounter = encounter;
 }
 
+// Presets for testing purposes
+
+STATE_PRESETS = {
+    'A': { 'pos': 64, 'level': 1, 'sword': 0, 'armor': 0,
+	   'items': { 'potion': 2 }, 'spells': {} },
+    'B': { 'pos': 250, 'level': 4, 'sword': 1, 'armor': 1,
+	   'items': { 'potion': 2 },
+	   'spells': { 'arcane': true } },
+    'C': { 'pos': 500, 'level': 8, 'sword': 2, 'armor': 2,
+	   'items': { 'potion': 2, 'ether': 1 },
+	   'spells': { 'arcane': true, 'fire': true } },
+    'D': { 'pos': 750, 'level': 12, 'sword': 3, 'armor': 3,
+	   'items': { 'potion': 4, 'ether': 3, 'elixir': 1 },
+	   'spells': { 'arcane': true, 'fire': true, 'holy': true } },
+}
+
+function fight(preset, encounter) {
+    if (!(preset in STATE_PRESETS)) {
+	console.log('no such preset');
+	return;
+    }
+    if (!(encounter in ENCOUNTER_INFO)) {
+	console.log('no such encounter');
+	return;
+    }
+    state = new State();
+    var p = STATE_PRESETS[preset];
+    for (var key in p) {
+	var val = p[key];
+	if (!(key in state)) {
+	    console.log('extraneous property: ' + key);
+	    continue;
+	}
+	state[key] = val;
+	state.hp = level_hp(state.level);
+	state.mp = level_mp(state.level);
+    }
+    state.items = {};
+    for (var key in p.items)
+	state.items[key] = p.items[key];
+    for (var key in p.spells)
+	state.items[key] = true;
+    main.screen = new BattleScreen(encounter);
+}
+
 MSG_BATTLEWIN = [
     "Victory is yours!",
     "Monsters were defeated!",
