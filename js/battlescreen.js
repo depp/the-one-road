@@ -184,6 +184,7 @@ function BattleScreen(encounter) {
 	var m = einfo[i];
 	this.addSprite(new BSMonster(m[1], m[2], m[0]), 'monster' + i);
     }
+    this.monster_count = einfo.length;
 
     this.player_action();
 }
@@ -356,9 +357,29 @@ BattleScreen.prototype.anim_sparkle = function(actor, amt) {
     ]
 }
 
+BattleScreen.prototype.list_targets = function() {
+    var targets = [];
+    for (var i = 0; i < this.monster_count; i++) {
+	var name = 'monster' + i;
+	if (!(name in this.sprite))
+	    continue;
+	targets.push(this.sprite[name]);
+    }
+    return targets;
+}
+
 BattleScreen.prototype.act_attack = function() {
+    var targets = this.list_targets();
+    if (targets.length > 1) {
+	this.menu.push(new BSTargetSelect(this, this.act_attack1, targets));
+    } else {
+	this.act_attack1(targets[0]);
+    }
+}
+
+BattleScreen.prototype.act_attack1 = function(target) {
     this.menu = [];
-    this.do_attack(this.sprite.player, this.sprite.monster0);
+    this.do_attack(this.sprite.player, target);
     this.queue_func(this.monster_action);
 }
 
@@ -548,8 +569,23 @@ BSMonster.prototype.damage = function(bs, amt) {
 }
 
 // Target selection menu
-/*
-function BSTargetSelect(bs) {
-    this.bs = bs;
+
+function BSTargetSelect(obj, action, targets) {
+    this.obj = obj;
+    this.action = action;
+    this.items = targets;
+    this.selected = 0;
 }
-*/
+
+BSTargetSelect.prototype = new BaseMenu();
+
+BSTargetSelect.prototype.draw = function(active) {
+    if (!active)
+	return;
+    var target = this.items[this.selected];
+    this.obj.sprites.draw(target.x - 12, target.y + 16, 'Hand', 1);
+}
+
+BSTargetSelect.prototype.do_action = function() {
+    this.action.call(this.obj, this.items[this.selected]);
+}
