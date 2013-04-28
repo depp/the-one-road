@@ -51,6 +51,8 @@ Overworld.prototype.move = function() {
 Overworld.prototype.do_encounter = function() {
     var frac = (state.pos - 64) / (OVERWORLD_WIDTH - 64);
     var enc = Math.floor(frac * (ENCOUNTERS.length - 1));
+    if (enc == ENCOUNTERS.length - 2)
+	state.potato = true;
     main.screen = new Transition(
 	this, new BattleScreen(ENCOUNTERS[enc]), false);
 }
@@ -224,6 +226,8 @@ StoreMenu.prototype.do_items = function() {
     var items = [];
     for (var i = 0; i < ITEMS.length; i++) {
 	var item = ITEMS[i];
+	if (item == 'potato' && !state.potato)
+	    continue;
 	var info = ITEM_INFO[item];
 	items.push({
 	    'title': (state.items[item] || 0).toString() + '  ' +

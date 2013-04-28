@@ -241,6 +241,7 @@ function State() {
     this.shield = false;
     this.next_encounter = 0;
     this.pos = 0;
+    this.potato = 0;
 }
 
 State.prototype.gen_next_encounter = function() {
