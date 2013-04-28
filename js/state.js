@@ -160,20 +160,23 @@ ENCOUNTER_INFO = {
 	'monsters': [
 	    ['rat', 82, 190]
 	],
-	'xp': 75
+	'xp': 75,
+	'gp': 10
     },
     'rat2': {
 	'monsters': [
 	    ['rat', 82, 160],
 	    ['rat', 100, 210]
 	],
-	'xp': 175
+	'xp': 175,
+	'gp': 20
     },
     'gremlin1': {
 	'monsters': [
 	    ['gremlin', 82, 190]
 	],
-	'xp': 125
+	'xp': 125,
+	'gp': 40,
     },
     'gremlin2': {
 	'monsters': [
@@ -181,13 +184,15 @@ ENCOUNTER_INFO = {
 	    ['gremlin', 100, 210],
 	    ['gremlin', 86, 260]
 	],
-	'xp': 200
+	'xp': 200,
+	'gp': 75,
     },
     'king1': {
 	'monsters': [
 	    ['gremlinking', 82, 190]
 	],
-	'xp': 400
+	'xp': 400,
+	'gp': 250
     },
     'king2': {
 	'monsters': [
@@ -196,7 +201,8 @@ ENCOUNTER_INFO = {
 	    ['gremlin', 140, 220],
 	    ['gremlin', 110, 280]
 	],
-	'xp': 550
+	'xp': 550,
+	'gp': 200
     },
     'king3': {
 	'monsters': [
@@ -206,6 +212,7 @@ ENCOUNTER_INFO = {
 	    ['gremlinking', 145, 240]
 	],
 	'xp': 800,
+	'gp': 400,
     },
     'boss': {
 	'monsters': [
@@ -230,8 +237,8 @@ function State() {
     this.gp = 0;
     this.sword = 0;
     this.armor = 0;
-    this.spells = {'arcane': true, 'fire': true, 'holy': true};
-    this.items = {'potion': 5, 'ether': 2, 'elixir': 1, 'potato': 1};
+    this.spells = {};
+    this.items = {}
     this.shield = false;
     this.next_encounter = 0;
     this.pos = 0;

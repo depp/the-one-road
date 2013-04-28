@@ -580,7 +580,7 @@ BattleScreen.prototype.end = function(did_win) {
     if (did_win) {
 	var sprite = this.big_msg([rand_message(MSG_BATTLEWIN)]);
 	var msgs = []
-	if (state.level < MAX_LEVEL) {
+	if (state.level < MAX_LEVEL && this.encounter.xp) {
 	    var curlevel = state.level;
 	    state.xp += this.encounter.xp;
 	    while (state.level < MAX_LEVEL &&
@@ -597,6 +597,10 @@ BattleScreen.prototype.end = function(did_win) {
 		text += ', Level Up!';
 	    }
 	    msgs.push(text);
+	}
+	if (this.encounter.gp) {
+	    msgs.push('Got ' + this.encounter.gp + ' GP.');
+	    state.gp += this.encounter.gp;
 	}
 	var w = 320, h = 32, y = 16*19+8;
 	var sprite2 = new BSBox((640 - w) / 2, y, w, msgs, 'left');	
