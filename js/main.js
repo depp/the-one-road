@@ -1,12 +1,20 @@
 var main = {};
 main.keys = {}
 
+function isObjectEmpty(obj) {
+    for (var prop in obj)
+	if (obj.hasOwnProperty(prop))
+	    return false;
+    return true;
+}
+
 function initGame() {
     var scripts = [
 	'font',
 	'sprites',
 	'menu',
 	'audio',
+	'state',
 	'battlescreen'
     ];
     var count = scripts.length;
@@ -21,9 +29,9 @@ function initGame() {
 	main.canvas.width = 640;
 	main.canvas.height = 360;
 	document.body.appendChild(main.canvas);
-	main.screen = new BattleScreen();
 	main.intervalid = null;
 	main.start();
+	main.newGame();
     }
     var head = document.getElementsByTagName('head')[0];
     for (var i = 0; i < scripts.length; i++) {
@@ -34,6 +42,11 @@ function initGame() {
 	script.onload = callback;
 	head.appendChild(script);
     }
+}
+
+main.newGame = function() {
+    var state = new State();
+    main.screen = new BattleScreen(state);
 }
 
 main.gameLoop = function() {

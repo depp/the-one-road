@@ -154,22 +154,13 @@ BSMonster.prototype.draw = function(bs) {
 
 // Battle Screen class
 
-function BattleScreen() {
-    this.frame = 0;
+function BattleScreen(state) {
+    this.state = state;
+
     this.font = new Font('font1', '7x9sharp');
     this.font_small = new Font('font1', '5x7slant');
     this.sprites = new Sprites('sprites');
-    items = [
-	{'title': 'Attack',
-	 'action': 'act_attack' },
-	{'title': 'Spell',
-	 'action': 'act_spell' },
-	{'title': 'Item',
-	 'action': 'act_item' },
-    ]
-    this.menu = new Menu(this, items, this.sprites,
-			 this.font, 16, 16*17, 16*5);
-    this.show_menu = true;
+    this.menu = null;
     this.setBackground('mountain');
     this.animations = [];
     this.animation_finished = []
@@ -177,6 +168,8 @@ function BattleScreen() {
     this.sprite = {};
     this.addSprite(new BSPlayer(485, 195), 'player');
     this.addSprite(new BSMonster(82, 190), 'monster0');
+
+    this.player_action();
 }
 
 BattleScreen.prototype.addSprite = function(obj, name) {
@@ -212,7 +205,6 @@ BattleScreen.prototype.setBackground = function(name) {
 }
 
 BattleScreen.prototype.update = function() {
-    this.frame++;
     while (true) {
 	var changed = false;
 	for (var i = 0; i < this.animations.length; i++) {
@@ -276,7 +268,7 @@ BattleScreen.prototype.queue_func = function(func) {
 BattleScreen.prototype.draw = function() {
     var cxt = main.cxt;
     cxt.drawImage(self.background, 0, 0);
-    if (this.show_menu)
+    if (this.menu)
 	this.menu.draw();
     for (var i = 0; i < 2; i++) {
 	for (var name in this.sprite) {
@@ -286,15 +278,16 @@ BattleScreen.prototype.draw = function() {
 	}
     }
     var infow = 9*16, infox = 640 - 16 - infow;
-    text_box(this.sprites, this.font, infox, 16*17, infow,
-	     ["Health 100/100",
-	      "Magic 100/100",
-	      "Level 1",
-	      "6 Potions"])
+    var info = [];
+    info.push('Level ' + this.state.level);
+    info.push('Health ' + this.state.hp + '/' + level_hp(this.state.level));
+    if (this.state.has_spells())
+	info.push('Mana ' + this.state.mp + '/' + level_mp(this.state.level));
+    text_box(this.sprites, this.font, infox, 16*17, infow, info);
 }
 
 BattleScreen.prototype.keydown = function(code) {
-    if (this.show_menu && !this.animations.length)
+    if (this.menu && !this.animations.length)
 	this.menu.keydown(code);
 }
 
@@ -344,24 +337,35 @@ BattleScreen.prototype.do_item = function(actor) {
 }
 
 BattleScreen.prototype.act_attack = function() {
-    this.show_menu = false;
+    this.menu = null;
     this.do_attack(this.sprite.player, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_spell = function() {
-    this.show_menu = false;
+    this.menu = null;
     this.do_spell(this.sprite.player, this.sprite.monster0);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.act_item = function() {
-    this.show_menu = false;
+    this.menu = null;
     this.do_item(this.sprite.player);
     this.queue_func(this.monster_action);
 }
 
 BattleScreen.prototype.monster_action = function() {
     this.do_attack(this.sprite.monster0, this.sprite.player);
-    this.queue_func(function() { this.show_menu = true; });
+    this.queue_func(this.player_action);
+}
+
+BattleScreen.prototype.player_action = function() {
+    items = [];
+    items.push({'title': 'Attack', 'action': this.act_attack});
+    if (this.state.has_spells())
+	items.push({'title': 'Spell', 'action': this.act_spell});
+    if (this.state.has_items())
+	items.push({'title': 'Item', 'action': this.act_item});
+    this.menu = new Menu(this, items, this.sprites,
+			 this.font, 16*24, 16*17, 16*5);
 }

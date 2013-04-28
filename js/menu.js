@@ -33,7 +33,7 @@ Menu.prototype.keydown = function(code) {
 	break;
 
     case 'enter':
-	this.obj[this.items[this.selected].action]();
+	this.items[this.selected].action.call(this.obj);
 	break;
     }
 }
