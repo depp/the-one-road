@@ -113,6 +113,7 @@ Overworld.prototype.do_store = function() {
 Overworld.prototype.do_menu = function() {
     this.move_left = false;
     this.move_right = false;
+    this.menu.push(new StatMenu(this));
 }
 
 function StoreMenu(obj) {
@@ -278,4 +279,109 @@ StoreMenu.prototype.do_item1 = function(name) {
     menu.set_item_name(menu.selected, 
 		       state.items[name].toString() + '  ' +
 		       info.name + ' \u2014 ' + info.gp + ' GP');
+}
+
+function StatMenu(obj) {
+    this.obj = obj;
+    var items = [
+	{ 'title': 'Return to Game', 'action': this.menu_pop },
+	{ 'title': 'Quit to Menu', 'action': this.do_quit },
+	{ 'title': 'Use Item', 'action': this.do_item }
+    ]
+    var mw = 16*10;
+    this.menu = [new Menu(this, items, 480 - mw / 2, 64, mw)];
+    this.msg = null;
+}
+
+StatMenu.prototype.menu_pop = function() {
+    this.menu.pop();
+    if (!this.menu.length)
+	this.obj.menu_pop();
+}
+
+StatMenu.prototype.draw = function(active) {
+    var tw = 16 * 10;
+    text_box(480 - tw / 2, 16, tw, ['Game Menu'], null, 'center');
+    for (var i = 0; i < this.menu.length; i++)
+	this.menu[i].draw(active && i == this.menu.length - 1);
+    if (this.msg)
+	text_box(480 - tw / 2, 16*8, tw, this.msg, null, 'center');
+
+    tw = 16 * 12;
+    text_box(160 - tw / 2, 16, tw, ['Character Info'], null, 'center');
+    var info = [
+	'Equipment:',
+	'  Left Hand: ' + SWORD_INFO[state.sword].name,
+	'  Right Hand: \u2014',
+	'  Armor: ' + ARMOR_INFO[state.armor].name
+    ]
+    text_box(160 - tw / 2, 64, tw, info, null, 'left');
+    info = [
+	'Level: ' + state.level +
+	    (state.level == MAX_LEVEL ? ' (Max)' :
+	     ' (' + state.xp + '/' + level_xp(state.level) + ' XP)'),
+	'HP: ' + state.hp + '/' + level_hp(state.level),
+	'MP: ' + state.mp + '/' + level_mp(state.level),
+	'ATK: ' + SWORD_ATTACK[state.sword],
+	'DEF: ' + ARMOR_DEFENSE[state.armor],
+	'GP: ' + state.gp
+    ];
+    text_box(160 - tw / 2, 16*10, tw, info, null, 'left');
+}
+
+StatMenu.prototype.keydown = function(key) {
+    this.msg = null;
+    this.menu[this.menu.length-1].keydown(key);
+}
+
+StatMenu.prototype.do_quit = function() {
+    var items = [
+	{ 'title': 'Continue Playing', 'action': this.menu_pop },
+	{ 'title': 'End Game', 'action': this.do_quit1 }
+    ]
+    this.do_submenu(items);
+}
+
+StatMenu.prototype.do_item = function() {
+    var items = [];
+    for (var i = 0; i < ITEMS.length; i++) {
+	var item = ITEMS[i];
+	if (!(item in state.items))
+	    continue;
+	var info = ITEM_INFO[item];
+	items.push({
+	    'title': state.items[item].toString() + '  ' + info.name,
+	    'action': (function(name) {
+		return function() { this.do_item1(name); };
+	    })(item)
+	})
+    }
+    if (items.length) {
+	this.do_submenu(items);
+    } else {
+	this.msg = ['No items.'];
+    }
+}
+
+StatMenu.prototype.do_item1 = function(name) {
+    console.log(name);
+    var info = ITEM_INFO[name];
+    state.hp += info.hp || 0;
+    state.mp += info.mp || 0;
+    var menu = this.menu[this.menu.length-1];
+    if (--state.items[name]) {
+	menu.set_item_name(
+	    menu.selected, state.items[name].toString() + '  ' + info.name);
+    } else {
+	delete state.items[name];
+	menu.hide_item(menu.selected, true);
+	if (!menu.count)
+	    this.menu_pop();
+    }
+}
+
+StatMenu.prototype.do_submenu = function(items) {
+    this.msg = null;
+    var mw = 16*10;
+    this.menu.push(new Menu(this, items, 480 - mw / 2 + 8, 72, mw));
 }

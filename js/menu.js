@@ -33,9 +33,7 @@ function Menu(obj, items, x, y, width) {
     this.selected = 0;
     this.active = true;
     this.lines = [];
-    for (var i = 0; i < this.items.length; i++)
-	this.lines.push(this.items[i].title);
-    this.count = this.lines.length;
+    this.reload();
 }
 
 Menu.prototype = new BaseMenu();
@@ -60,10 +58,13 @@ Menu.prototype.do_action = function() {
 
 Menu.prototype.reload = function() {
     this.lines = [];
+    this.idxs = [];
     for (var i = 0; i < this.items.length; i++) {
 	var item = this.items[i];
-	if (!('hidden' in item))
+	if (!('hidden' in item)) {
 	    this.lines.push(item.title);
+	    this.idxs.push(i);
+	}
     }
     if (this.selected >= this.lines.length)
 	this.selected = this.lines.length - 1;
@@ -71,6 +72,7 @@ Menu.prototype.reload = function() {
 }
 
 Menu.prototype.hide_item = function(idx, flag) {
+    idx = this.idxs[idx];
     if (flag) {
 	if ('hidden' in this.items[idx])
 	    return;
@@ -84,7 +86,7 @@ Menu.prototype.hide_item = function(idx, flag) {
 }
 
 Menu.prototype.set_item_name = function(idx, name) {
-    this.items[idx].title = name;
+    this.items[this.idxs[idx]].title = name;
     this.reload();
 }
 
