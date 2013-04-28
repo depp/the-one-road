@@ -61,7 +61,7 @@ Overworld.prototype.update = function() {
 	this.do_encounter();
 	return;
     }
-    this.menu[0].hide_item(0, state.pos >= 64);
+    this.menu[0].hide_item(1, state.pos >= 64);
 }
 
 Overworld.prototype.draw = function() {
