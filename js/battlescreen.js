@@ -502,6 +502,9 @@ BattleScreen.prototype.act_item1 = function(name) {
 	    player.sparkle_anim('sparklemp')
 	]));
     }
+    if (name == 'potato') {
+	anim.push(this.do_spell('holy', player, this.list_targets()));
+    }
     this.animate(anim);
     this.queue_func(this.monster_action);
 }

@@ -58,7 +58,8 @@ ITEM_INFO = {
 	'mp': 75
     },
     'potato': {
-	'name': 'Potato'
+	'name': 'Potato',
+	'hp': 100
     }
 }
 
