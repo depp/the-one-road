@@ -24,11 +24,9 @@ BaseMenu.prototype.keydown = function(code) {
     }
 }
 
-function Menu(obj, items, sprites, font, x, y, width) {
+function Menu(obj, items, x, y, width) {
     this.obj = obj
     this.items = items;
-    this.sprites = sprites;
-    this.font = font;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -42,7 +40,7 @@ function Menu(obj, items, sprites, font, x, y, width) {
 Menu.prototype = new BaseMenu();
 
 Menu.prototype.draw = function(active) {
-    text_box(this.sprites, this.font, this.x, this.y, this.width,
+    text_box(this.x, this.y, this.width,
 	     this.lines, active ? this.selected : null);
 }
 

@@ -114,7 +114,7 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	fw * scale, edge * scale);
 }
 
-function text_box(spr, font, x, y, w, lines, selection, align)
+function text_box(x, y, w, lines, selection, align)
 {
     var xpos;
     switch (align) {
@@ -132,11 +132,11 @@ function text_box(spr, font, x, y, w, lines, selection, align)
 	break;
     }
 
-    spr.drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
+    sprites.drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
     for (var i = 0; i < lines.length; i++) {
 	var line = lines[i];
 	font.drawLine(xpos, y + 20 + i*16, line, 1, align);
     }
     if (selection || selection === 0)
-	spr.draw(x - 2, y + 8 + selection*16, 'Hand', 1);
+	sprites.draw(x - 2, y + 8 + selection*16, 'Hand', 1);
 }

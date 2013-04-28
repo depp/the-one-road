@@ -1,4 +1,5 @@
 var main = {};
+var sprites, font;
 main.keys = {}
 
 function isObjectEmpty(obj) {
@@ -23,6 +24,9 @@ function initGame() {
 	if (count > 0)
 	    return;
 	console.log('starting game...');
+
+	sprites = new Sprites('sprites');
+	font = new Font('font1', '7x9sharp');
 
 	main.canvas = document.createElement('canvas');
 	main.cxt = main.canvas.getContext('2d');

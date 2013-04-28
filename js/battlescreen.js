@@ -108,8 +108,8 @@ function BSImage() { }
 
 BSImage.prototype = new BSSprite();
 
-BSImage.prototype.draw = function(bs) {
-    bs.sprites.draw(this.x, this.y, this.sprite, 1);
+BSImage.prototype.draw = function() {
+    sprites.draw(this.x, this.y, this.sprite, 1);
 }
 
 BSImage.prototype.sprite_anim = function(count, speed, sprites) {
@@ -145,8 +145,8 @@ function BSText(x, y, text) {
 
 BSText.prototype = new BSSprite();
 
-BSText.prototype.draw = function(bs) {
-    bs.font.drawLine(this.x, this.y, this.text, 1);
+BSText.prototype.draw = function() {
+    font.drawLine(this.x, this.y, this.text, 1);
 }
 
 function BSBox(x, y, width, lines) {
@@ -159,8 +159,8 @@ function BSBox(x, y, width, lines) {
 
 BSBox.prototype = new BSSprite();
 
-BSBox.prototype.draw = function(bs) {
-    text_box(bs.sprites, bs.font, this.x, this.y, this.width,
+BSBox.prototype.draw = function() {
+    text_box(this.x, this.y, this.width,
 	     this.lines, null, 'center');
 }
 
@@ -193,8 +193,6 @@ BSMonster.prototype = new BSImage();
 function BattleScreen(encounter) {
     var einfo = ENCOUNTER_INFO[encounter];
 
-    this.font = new Font('font1', '7x9sharp');
-    this.sprites = new Sprites('sprites');
     this.menu = [];
     this.setBackground('mountain');
     this.animations = [];
@@ -312,7 +310,7 @@ BattleScreen.prototype.draw = function() {
 	for (var name in this.sprite) {
 	    var sp = this.sprite[name];
 	    if (sp.layer == i)
-		sp.draw(this);
+		sp.draw();
 	}
     }
     for (var i = 0; i < this.menu.length; i++) {
@@ -324,7 +322,7 @@ BattleScreen.prototype.draw = function() {
     info.push('Health ' + state.hp + '/' + level_hp(state.level));
     if (!isObjectEmpty(state.spells))
 	info.push('Mana ' + state.mp + '/' + level_mp(state.level));
-    text_box(this.sprites, this.font, infox, 16*17, infow, info);
+    text_box(infox, 16*17, infow, info);
 }
 
 BattleScreen.prototype.keydown = function(code) {
@@ -410,8 +408,7 @@ BattleScreen.prototype.act_spell = function() {
     if (items.length == 1) {
 	items[0].action.call(this);
     } else {
-	this.menu.push(new Menu(this, items, this.sprites,
-				this.font, 16*19, 16*17 + 8, 16*10));
+	this.menu.push(new Menu(this, items, 16*19, 16*17 + 8, 16*10));
     }
 }
 
@@ -466,8 +463,7 @@ BattleScreen.prototype.act_item = function() {
     if (mitems.length == 1) {
 	mitems[0].action.call(this);
     } else {
-	this.menu.push(new Menu(this, mitems, this.sprites,
-				this.font, 16*19, 16*17 + 8, 16*6));
+	this.menu.push(new Menu(this, mitems, 16*19, 16*17 + 8, 16*6));
     }
 }
 
@@ -530,8 +526,7 @@ BattleScreen.prototype.player_action = function() {
 	items.push({'title': 'Spell', 'action': this.act_spell});
     if (!isObjectEmpty(state.items))
 	items.push({'title': 'Item', 'action': this.act_item});
-    this.menu = [new Menu(this, items, this.sprites,
-			  this.font, 16*19-8, 16*17, 16*5)];
+    this.menu = [new Menu(this, items, 16*19-8, 16*17, 16*5)];
 }
 
 BattleScreen.prototype.big_msg = function(lines) {
@@ -682,10 +677,9 @@ BSTargetSelect.prototype.draw = function(active) {
     if (!active)
 	return;
     var target = this.items[this.selected];
-    this.obj.sprites.draw(target.x - 12, target.y + 16, 'Hand', 1);
+    sprites.draw(target.x - 12, target.y + 16, 'Hand', 1);
 }
 
 BSTargetSelect.prototype.do_action = function() {
-    console.log(this.action);
     this.action.call(this.obj, this.items[this.selected]);
 }
