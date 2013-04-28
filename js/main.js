@@ -1,5 +1,5 @@
 var main = {};
-var sprites, font;
+var sprites;
 main.keys = {}
 
 function isObjectEmpty(obj) {
@@ -7,6 +7,15 @@ function isObjectEmpty(obj) {
 	if (obj.hasOwnProperty(prop))
 	    return false;
     return true;
+}
+
+function preInit() {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = 'js/static.js';
+    script.onreadystatechange = initGame;
+    script.onload = initGame;
+    document.getElementsByTagName('head')[0].appendChild(script);
 }
 
 function initGame() {
@@ -26,9 +35,6 @@ function initGame() {
 	if (count > 0)
 	    return;
 	console.log('starting game...');
-
-	sprites = new Sprites('img/sprites');
-	font = new Font('img/font', 'img/7x9sharp');
 
 	main.canvas = document.createElement('canvas');
 	main.cxt = main.canvas.getContext('2d');
@@ -118,4 +124,4 @@ addEventListener('keyup', function (e) {
     return false;
 }, false)
 
-initGame();
+preInit();

@@ -1,42 +1,11 @@
-var sprite_images = {};
-var sprite_desc = {};
+var sprite_img = new Image();
+sprite_img.src = 'img/sprites.png';
 
-function Sprites(name) {
-    var img, desc;
-
-    if (name in sprite_images) {
-	img = sprite_images[name];
-    } else {
-	img = new Image();
-	img.src = name + '.png';
-	sprite_images[name] = img;
-    }
-
-    if (name in sprite_desc) {
-	desc = sprite_desc[name];
-    } else {
-	console
-	sprite_desc[name] = null
-	var req = new XMLHttpRequest();
-	req.open('GET', name + '.json', true);
-	req.onreadystatechange = function() {
-	    if (req.readyState != 4)
-		return
-	    sprite_desc[name] = JSON.parse(req.responseText);
-	}
-	req.send(null);
-    }
-
-    this.name = name;
-}
-
-Sprites.prototype.draw = function(x, y, name, scale) {
+function drawSprite(x, y, name, scale) {
     x = Math.round(x);
     y = Math.round(y);
-    var img = sprite_images[this.name];
-    var desc = sprite_desc[this.name];
-    if (img == null || desc == null)
-	return;
+    var img = sprite_img;
+    var desc = JSON_sprites;
     var cxt = main.cxt;
     var sp = desc[name];
     cxt.drawImage(
@@ -44,13 +13,11 @@ Sprites.prototype.draw = function(x, y, name, scale) {
 	x, y, sp[2] * scale, sp[3] * scale);
 }
 
-Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
+function drawBox(x, y, w, h, edge, name, scale) {
     x = Math.round(x);
     y = Math.round(y);
-    var img = sprite_images[this.name];
-    var desc = sprite_desc[this.name];
-    if (img == null || desc == null)
-	return;
+    var img = sprite_img;
+    var desc = JSON_sprites;
 
     var cxt = main.cxt;
     var sp = desc[name];
@@ -114,7 +81,7 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	fw * scale, edge * scale);
 }
 
-function text_box(x, y, w, lines, selection, align)
+function drawTextBox(x, y, w, lines, selection, align)
 {
     var xpos;
     switch (align) {
@@ -132,11 +99,11 @@ function text_box(x, y, w, lines, selection, align)
 	break;
     }
 
-    sprites.drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
+    drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
     for (var i = 0; i < lines.length; i++) {
 	var line = lines[i];
 	font.drawLine(xpos, y + 20 + i*16, line, 1, align);
     }
     if (selection || selection === 0)
-	sprites.draw(x - 2, y + 8 + selection*16, 'Hand', 1);
+	drawSprite(x - 2, y + 8 + selection*16, 'Hand', 1);
 }

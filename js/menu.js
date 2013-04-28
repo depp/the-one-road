@@ -39,8 +39,8 @@ function Menu(obj, items, x, y, width) {
 Menu.prototype = new BaseMenu();
 
 Menu.prototype.draw = function(active) {
-    text_box(this.x, this.y, this.width,
-	     this.lines, active ? this.selected : null);
+    drawTextBox(this.x, this.y, this.width,
+		this.lines, active ? this.selected : null);
 }
 
 Menu.prototype.do_action = function() {

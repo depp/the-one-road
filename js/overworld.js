@@ -75,9 +75,9 @@ Overworld.prototype.draw = function() {
     var bgpos = 640 * fracx;
     cxt.drawImage(this.background, -bgpos, 0);
 
-    sprites.draw(px - bgpos + 2 * Math.abs(Math.sin(px / 10)),
-		 230 + 2 * Math.abs(Math.sin(px / 10)),
-		 'player_overworld', 1);
+    drawSprite(px - bgpos + 2 * Math.abs(Math.sin(px / 10)),
+	       230 + 2 * Math.abs(Math.sin(px / 10)),
+	       'player_overworld', 1);
 
     this.menu[this.menu.length-1].draw(true);
 }
@@ -137,14 +137,14 @@ StoreMenu.prototype.menu_pop = function() {
 
 StoreMenu.prototype.draw = function(active) {
     var tw = 16 * 10;
-    text_box(320 - tw / 2, 16, tw,
-	     ['Shopping District',
-	      'You have: ' + state.gp + ' GP'], null, 'center');
+    drawTextBox(320 - tw / 2, 16, tw,
+		['Shopping District',
+		 'You have: ' + state.gp + ' GP'], null, 'center');
     for (var i = 0; i < this.menu.length; i++)
 	this.menu[i].draw(active && i == this.menu.length - 1);
     var mw = 16 * 16;
     if (this.msg)
-	text_box(320 - mw / 2, 16*9, mw, this.msg, null, 'center');
+	drawTextBox(320 - mw / 2, 16*9, mw, this.msg, null, 'center');
 }
 
 StoreMenu.prototype.keydown = function(key) {
@@ -301,21 +301,21 @@ StatMenu.prototype.menu_pop = function() {
 
 StatMenu.prototype.draw = function(active) {
     var tw = 16 * 10;
-    text_box(480 - tw / 2, 16, tw, ['Game Menu'], null, 'center');
+    drawTextBox(480 - tw / 2, 16, tw, ['Game Menu'], null, 'center');
     for (var i = 0; i < this.menu.length; i++)
 	this.menu[i].draw(active && i == this.menu.length - 1);
     if (this.msg)
-	text_box(480 - tw / 2, 16*8, tw, this.msg, null, 'center');
+	drawTextBox(480 - tw / 2, 16*8, tw, this.msg, null, 'center');
 
     tw = 16 * 12;
-    text_box(160 - tw / 2, 16, tw, ['Character Info'], null, 'center');
+    drawTextBox(160 - tw / 2, 16, tw, ['Character Info'], null, 'center');
     var info = [
 	'Equipment:',
 	'  Left Hand: ' + SWORD_INFO[state.sword].name,
 	'  Right Hand: \u2014',
 	'  Armor: ' + ARMOR_INFO[state.armor].name
     ]
-    text_box(160 - tw / 2, 64, tw, info, null, 'left');
+    drawTextBox(160 - tw / 2, 64, tw, info, null, 'left');
     info = [
 	'Level: ' + state.level +
 	    (state.level == MAX_LEVEL ? ' (Max)' :
@@ -326,7 +326,7 @@ StatMenu.prototype.draw = function(active) {
 	'DEF: ' + ARMOR_DEFENSE[state.armor],
 	'GP: ' + state.gp
     ];
-    text_box(160 - tw / 2, 16*10, tw, info, null, 'left');
+    drawTextBox(160 - tw / 2, 16*10, tw, info, null, 'left');
 }
 
 StatMenu.prototype.keydown = function(key) {

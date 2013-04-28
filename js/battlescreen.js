@@ -109,7 +109,7 @@ function BSImage() { }
 BSImage.prototype = new BSSprite();
 
 BSImage.prototype.draw = function() {
-    sprites.draw(this.x, this.y, this.sprite, 1);
+    drawSprite(this.x, this.y, this.sprite, 1);
 }
 
 BSImage.prototype.sprite_anim = function(count, speed, sprites) {
@@ -161,8 +161,8 @@ function BSBox(x, y, width, lines, align) {
 BSBox.prototype = new BSSprite();
 
 BSBox.prototype.draw = function() {
-    text_box(this.x, this.y, this.width,
-	     this.lines, null, this.align);
+    drawTextBox(this.x, this.y, this.width,
+		this.lines, null, this.align);
 }
 
 function BSPlayer(x, y) {
@@ -324,7 +324,7 @@ BattleScreen.prototype.draw = function() {
     info.push('Health ' + state.hp + '/' + level_hp(state.level));
     if (!isObjectEmpty(state.spells))
 	info.push('Mana ' + state.mp + '/' + level_mp(state.level));
-    text_box(infox, 16*17, infow, info);
+    drawTextBox(infox, 16*17, infow, info);
 }
 
 BattleScreen.prototype.keydown = function(code) {
@@ -703,7 +703,7 @@ BSTargetSelect.prototype.draw = function(active) {
     if (!active)
 	return;
     var target = this.items[this.selected];
-    sprites.draw(target.x - 12, target.y + 16, 'Hand', 1);
+    drawSprite(target.x - 12, target.y + 16, 'Hand', 1);
 }
 
 BSTargetSelect.prototype.do_action = function() {

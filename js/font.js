@@ -1,41 +1,17 @@
-var font_images = {};
-var font_desc = {};
+var font_img = null;
 
-function Font(imgname, descname) {
-    var img, desc;
-
-    if (imgname in font_images) {
-	img = font_images[imgname];
-    } else {
-	img = new Image();
-	img.src = imgname + '.png';
-	font_images[imgname] = img;
+function Font(desc) {
+    if (!font_img) {
+	font_img = new Image();
+	font_img.src = 'img/font.png';
     }
-
-    if (descname in font_desc) {
-	desc = font_desc[descname];
-    } else {
-	console
-	font_desc[descname] = null
-	var req = new XMLHttpRequest();
-	req.open('GET', descname + '.json', true);
-	req.onreadystatechange = function() {
-	    if (req.readyState != 4)
-		return
-	    font_desc[descname] = JSON.parse(req.responseText);
-	}
-	req.send(null);
-    }
-
-    this.imgname = imgname;
-    this.descname = descname;
+    this.desc = desc;
 }
 
-Font.prototype.lineLength = function(text) {
-    var desc = font_desc[this.descname];
-    if (!desc)
-	return 0;
+var font = new Font(JSON_7x9sharp);
 
+Font.prototype.lineLength = function(text) {
+    var desc = this.desc;
     var xpos = 0;
     var kern = null;
     var charmap = desc.charmap;
@@ -55,10 +31,8 @@ Font.prototype.lineLength = function(text) {
 }
 
 Font.prototype.drawLine = function(x, y, text, scale, align) {
-    var img = font_images[this.imgname];
-    var desc = font_desc[this.descname];
-    if (img === null || desc === null)
-	return;
+    var img = font_img;;
+    var desc = this.desc;
 
     var xoff = 0;
     switch (align) {
