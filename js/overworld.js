@@ -2,31 +2,50 @@ var OVERWORLD_WIDTH = 968;
 var OVERWORLD_SPEED = 2;
 
 function Overworld() {
+    if (state.next_encounter <= 0)
+	state.gen_next_encounter();
+
     this.background = new Image();
     this.background.src = 'img/overworld.png';
-
-    this.pos = 0;
 
     this.move_left = false;
     this.move_right = false;
 }
 
-Overworld.prototype.update = function() {
+Overworld.prototype.move = function() {
     var move = (this.move_left ? 1 : 0) + (this.move_right ? -1 : 0);
-    if (move) {
-	this.pos += move * OVERWORLD_SPEED;
-	if (this.pos < 0)
-	    this.pos = 0;
-	else if (this.pos > OVERWORLD_WIDTH)
-	    this.pos = OVERWORLD_WIDTH;
+    if (!move || state.next_encounter <= 0)
+	return;
+    var pos = state.pos, enc = state.next_encounter;
+    var rate = move > 0 ? 2 : 1;
+    for (var i = 0; i < OVERWORLD_SPEED; i++) {
+	if (move > 0 && pos == OVERWORLD_WIDTH)
+	    break;
+	if (move < 0 && pos == 0)
+	    break;
+	pos += move;
+	if (pos > 64)
+	    enc -= rate;
+	if (enc <= 0)
+	    break;
     }
+    state.pos = pos;
+    state.next_encounter = enc;
+    if (enc <= 0) {
+	console.log('encounter');
+	state.gen_next_encounter();
+    }
+}
+
+Overworld.prototype.update = function() {
+    this.move();
 }
 
 Overworld.prototype.draw = function() {
     var cxt = main.cxt;
     var FAR_RIGHT = 1136, MARGIN = 128;
-    var px = 1136 - this.pos;
-    var fracx = (OVERWORLD_WIDTH - MARGIN - this.pos) /
+    var px = 1136 - state.pos;
+    var fracx = (OVERWORLD_WIDTH - MARGIN - state.pos) /
 	(OVERWORLD_WIDTH - 2*MARGIN);
     if (fracx < 0) fracx = 0;
     if (fracx > 1) fracx = 1;

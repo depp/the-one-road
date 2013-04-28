@@ -95,9 +95,9 @@ ENCOUNTER_INFO = {
 }
 
 var DIFFICULTY_INFO = [
-    { 'plevel': 15, 'mlevel': 5 },
-    { 'plevel': 10, 'mlevel': 5 },
-    { 'plevel': 5, 'mlevel': 5 }
+    { 'plevel': 15, 'mlevel': 5, 'encounter': 180 },
+    { 'plevel': 10, 'mlevel': 5, 'encounter': 120 },
+    { 'plevel': 5,  'mlevel': 5, 'encounter': 80 }
 ]
 
 function State() {
@@ -110,6 +110,14 @@ function State() {
     this.spells = {'arcane': true, 'fire': true, 'holy': true};
     this.items = {'potion': 5, 'ether': 2, 'elixir': 1, 'potato': 1};
     this.shield = false;
+    this.next_encounter = 0;
+    this.pos = 0;
+}
+
+State.prototype.gen_next_encounter = function() {
+    var encounter = DIFFICULTY_INFO[state.difficulty].encounter;
+    encounter = random(encounter, encounter * 2);
+    this.next_encounter = encounter;
 }
 
 MSG_BATTLEWIN = [
