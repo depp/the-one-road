@@ -82,6 +82,7 @@ BSSprite.prototype.damage_anim = function(amt) {
     return [
 	sprite.insert_anim(),
 	sprite.interp_anim(tx, ty, tx, ty - 12, 20, 'decel'),
+	pause_anim(20),
 	sprite.remove_anim()
     ]
 }
@@ -308,8 +309,9 @@ BattleScreen.prototype.do_attack = function(actor, target) {
     tx += (ax < tx) ? -40 : +40;
     this.animate([
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
-	target.damage_anim(-50),
-	actor.interp_anim(tx, ty, ax, ay, 10),
+	parallel_anim([target.damage_anim(-50)]),
+	pause_anim(10),
+	actor.interp_anim(tx, ty, ax, ay, 10)
     ])
 }
 
@@ -320,7 +322,7 @@ BattleScreen.prototype.do_spell = function(actor, target) {
     var effect = new BSEffect(ax, ay, 'fire_1');
     this.animate([
 	effect.insert_anim(),
-	pause_anim(20),
+	pause_anim(10),
 	effect.interp_anim(ax, ay, tx, ty, 30, 'accel'),
 	effect.sprite_anim(2, 10, ['fire_2', 'fire_3']),
 	effect.remove_anim(),
