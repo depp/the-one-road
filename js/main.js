@@ -17,6 +17,7 @@ function initGame() {
 	'audio',
 	'state',
 	'overworld',
+	'transition',
 	'battlescreen'
     ];
     var count = scripts.length;

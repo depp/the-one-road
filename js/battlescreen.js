@@ -551,7 +551,10 @@ BattleScreen.prototype.end = function(did_win) {
 	this.animate([
 	    sprite.insert_anim(),
 	    pause_anim(60)
-	])
+	]);
+	this.queue_func(function() {
+	    this.menu = [new BSTransitionMenu(new Overworld(), true)];
+	});
     } else {
 	var sprite = this.big_msg([rand_message(MSG_BATTLELOSE)]);
 	this.sprite.player.sprite = 'player_dead';
@@ -683,3 +686,15 @@ BSTargetSelect.prototype.draw = function(active) {
 BSTargetSelect.prototype.do_action = function() {
     this.action.call(this.obj, this.items[this.selected]);
 }
+
+function BSTransitionMenu(target, reverse) {
+    this.target = target;
+    this.reverse = reverse;
+}
+
+BSTransitionMenu.prototype.keydown = function(code) {
+    if (code == 'enter')
+	main.screen = new Transition(main.screen, this.target, this.reverse);
+}
+
+BSTransitionMenu.prototype.draw = function(active) { }

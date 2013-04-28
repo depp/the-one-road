@@ -31,14 +31,15 @@ Overworld.prototype.move = function() {
     }
     state.pos = pos;
     state.next_encounter = enc;
-    if (enc <= 0) {
-	console.log('encounter');
-	state.gen_next_encounter();
-    }
 }
 
 Overworld.prototype.update = function() {
     this.move();
+    if (state.next_encounter <= 0) {
+	main.screen = new Transition(
+	    this, new BattleScreen('gremlin1'), false);
+	return;
+    }
 }
 
 Overworld.prototype.draw = function() {
