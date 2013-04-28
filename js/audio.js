@@ -1,6 +1,9 @@
 var audio_files = {};
 var music_track = null;
 var sfx_file = null;
+var music_tracknum = null;
+
+MUSIC_TRACKS = ['audio/background', 'audio/battle', 'audio/crystal']
 
 function audio_obj(path) {
     if (path in audio_files) {
@@ -26,17 +29,26 @@ function music_ended() {
     this.play();
 }
 
-function music_play(track) {
-    var obj = audio_obj(track);
+function music_play(tracknum) {
+    if (music_tracknum === tracknum)
+	return;
+    if (tracknum === null) {
+	music_track.stop();
+	music_track = null;
+	music_tracknum = null;
+	return;
+    }
+    var obj = audio_obj(MUSIC_TRACKS[tracknum]);
     if (obj == music_track)
 	return;
     if (music_track) {
 	music_track.removeEventListener('ended', music_ended);
-	music_track.stop();
+	music_track.pause();
     }
     obj.addEventListener('ended', music_ended);
     obj.play();
     music_track = obj;
+    music_tracknum = tracknum;
 }
 
 var sfx_end = null;
@@ -54,6 +66,7 @@ function sfxPlay2() {
 }
 
 function sfxPlay(name) {
+    return;
     if (!sfx_file || sfx_queue) {
 	sfx_queue = name;
 	if (!sfx_file) {

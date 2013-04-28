@@ -62,6 +62,13 @@ Overworld.prototype.update = function() {
 	return;
     }
     this.menu[0].hide_item(1, state.pos >= 64);
+    var frac = state.pos / OVERWORLD_WIDTH;
+    if (frac < 0.3)
+	music_play(0)
+    else if (frac > 0.4 && frac < 0.6)
+	music_play(1);
+    else if (frac > 0.7)
+	music_play(2);
 }
 
 Overworld.prototype.draw = function() {
