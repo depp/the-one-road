@@ -27,6 +27,7 @@ function initGame() {
 	'state',
 	'overworld',
 	'transition',
+	'mainmenu',
 	'battlescreen'
     ];
     var count = scripts.length;
@@ -58,8 +59,7 @@ function initGame() {
 
 main.newGame = function() {
     state = new State();
-    // main.screen = new BattleScreen('gremlin2');
-    main.screen = new Overworld();
+    main.screen = new MainMenu();
 }
 
 main.gameLoop = function() {

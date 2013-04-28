@@ -218,7 +218,6 @@ ENCOUNTER_INFO = {
 	'monsters': [
 	    ['boss', 82, 210],
 	],
-	'xp': 1500
     },
 }
 

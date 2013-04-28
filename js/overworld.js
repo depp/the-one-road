@@ -350,6 +350,10 @@ StatMenu.prototype.do_quit = function() {
     this.do_submenu(items);
 }
 
+StatMenu.prototype.do_quit1 = function() {
+    main.screen = new Transition(this, new MainMenu(), false);
+}
+
 StatMenu.prototype.do_item = function() {
     var items = [];
     for (var i = 0; i < ITEMS.length; i++) {

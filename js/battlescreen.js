@@ -203,6 +203,7 @@ function BattleScreen(encounter) {
     var einfo = ENCOUNTER_INFO[encounter];
 
     this.encounter = einfo;
+    this.encounter_name = encounter;
     this.menu = [];
     this.setBackground('mountain');
     this.animations = [];
@@ -578,6 +579,16 @@ BattleScreen.prototype.end = function(did_win) {
     this.menu = [];
     this.animation_finished = [];
     if (did_win) {
+	if (this.encounter_name == 'boss') {
+	    this.animate([
+		this.big_msg(['You win, game over.']).insert_anim(),
+		pause_anim(30)
+	    ]);
+	    this.queue_func(function() {
+		this.menu = [new BSTransitionMenu(new MainMenu(), true)];
+	    });
+	    return;
+	}
 	var sprite = this.big_msg([rand_message(MSG_BATTLEWIN)]);
 	var msgs = []
 	if (state.level < MAX_LEVEL && this.encounter.xp) {
@@ -619,7 +630,11 @@ BattleScreen.prototype.end = function(did_win) {
 	this.animate([
 	    sfx_anim('deathmusic'),
 	    sprite.insert_anim(),
-	])
+	    pause_anim(30)
+	]);
+	this.queue_func(function() {
+	    this.menu = [new BSTransitionMenu(new MainMenu(), true)];
+	});
     }
 }
 
