@@ -1,5 +1,7 @@
 var state = null;
 
+MAX_LEVEL = 20;
+
 function random(min, max) {
     var x = Math.floor(Math.random() * (max + 1 - min)) + min;
     return x >= max ? max : x;
@@ -79,20 +81,25 @@ MONSTER_INFO = {
 	'level': 0,
 	'attack': 2,
 	'defense': 0,
-	'nx': 8,
-	'xp': 75
+	'nx': 8
     }
 }
 
 ENCOUNTERS = ['gremlin1', 'gremlin2']
 ENCOUNTER_INFO = {
-    'gremlin1': [
-	['gremlin', 82, 190]
-    ],
-    'gremlin2': [
-	['gremlin', 82, 160],
-	['gremlin', 100, 210]
-    ],
+    'gremlin1': {
+	'monsters': [
+	    ['gremlin', 82, 190]
+	],
+	'xp': 75
+    },
+    'gremlin2': {
+	'monsters': [
+	    ['gremlin', 82, 160],
+	    ['gremlin', 100, 210]
+	],
+	'xp': 175
+    },
 }
 
 var DIFFICULTY_INFO = [
@@ -106,6 +113,7 @@ function State() {
     this.level = 1;
     this.hp = level_hp(1);
     this.mp = level_mp(1);
+    this.xp = 0;
     this.sword = 0;
     this.armor = 0;
     this.spells = {'arcane': true, 'fire': true, 'holy': true};

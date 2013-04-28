@@ -149,19 +149,20 @@ BSText.prototype.draw = function() {
     font.drawLine(this.x, this.y, this.text, 1);
 }
 
-function BSBox(x, y, width, lines) {
+function BSBox(x, y, width, lines, align) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.lines = lines;
     this.layer = 1;
+    this.align = align;
 }
 
 BSBox.prototype = new BSSprite();
 
 BSBox.prototype.draw = function() {
     text_box(this.x, this.y, this.width,
-	     this.lines, null, 'center');
+	     this.lines, null, this.align);
 }
 
 function BSPlayer(x, y) {
@@ -193,6 +194,7 @@ BSMonster.prototype = new BSImage();
 function BattleScreen(encounter) {
     var einfo = ENCOUNTER_INFO[encounter];
 
+    this.encounter = einfo;
     this.menu = [];
     this.setBackground('mountain');
     this.animations = [];
@@ -200,12 +202,12 @@ function BattleScreen(encounter) {
 
     this.sprite = {};
     this.addSprite(new BSPlayer(485, 195), 'player');
-    for (var i = 0; i < einfo.length; i++) {
-	var m = einfo[i];
+    for (var i = 0; i < einfo.monsters.length; i++) {
+	var m = einfo.monsters[i];
 	this.addSprite(new BSMonster(m[1], m[2], m[0]), 'monster' + i);
     }
-    this.monster_count = einfo.length;
-    this.monster_alive = einfo.length;
+    this.monster_count = einfo.monsters.length;
+    this.monster_alive = einfo.monsters.length;
 
     this.player_action();
 }
@@ -531,7 +533,7 @@ BattleScreen.prototype.player_action = function() {
 
 BattleScreen.prototype.big_msg = function(lines) {
     var w = 320, h = 32, y = 16*17;
-    return new BSBox((640 - w) / 2, y, w, lines);
+    return new BSBox((640 - w) / 2, y, w, lines, 'center');
 }
 
 BattleScreen.prototype.attack_msg = function(lines) {
@@ -548,9 +550,32 @@ BattleScreen.prototype.end = function(did_win) {
     this.animation_finished = [];
     if (did_win) {
 	var sprite = this.big_msg([rand_message(MSG_BATTLEWIN)]);
+	var msgs = []
+	if (state.level < MAX_LEVEL) {
+	    var curlevel = state.level;
+	    state.xp += this.encounter.xp;
+	    while (state.level < MAX_LEVEL &&
+		   state.xp >= level_xp(state.level)) {
+		state.xp -= level_xp(state.level);
+		state.level++;
+	    }
+	    if (state.level == MAX_LEVEL)
+		state.xp = 0;
+	    var text = '+' + this.encounter.xp + ' XP';
+	    if (state.level > curlevel) {
+		state.hp += level_hp(state.level) - level_hp(curlevel);
+		state.mp += level_mp(state.level) - level_mp(curlevel);
+		text += ', Level Up!';
+	    }
+	    msgs.push(text);
+	}
+	var w = 320, h = 32, y = 16*19+8;
+	var sprite2 = new BSBox((640 - w) / 2, y, w, msgs, 'left');	
 	this.animate([
 	    sprite.insert_anim(),
-	    pause_anim(60)
+	    pause_anim(10),
+	    sprite2.insert_anim(),
+	    pause_anim(30)
 	]);
 	this.queue_func(function() {
 	    this.menu = [new BSTransitionMenu(new Overworld(), true)];
