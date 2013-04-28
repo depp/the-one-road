@@ -421,12 +421,24 @@ BattleScreen.prototype.player_action = function() {
 			  this.font, 16*19-8, 16*17, 16*5)];
 }
 
+BattleScreen.prototype.big_msg = function(lines) {
+    var w = 320, h = 32, y = 16*17;
+    return new BSBox((640 - w) / 2, y, w, lines);
+}
+
+BattleScreen.prototype.attack_msg = function(lines) {
+    var sprite = this.big_msg(lines);
+    return parallel_anim([
+	sprite.insert_anim(),
+	pause_anim(60),
+	sprite.remove_anim()
+    ])
+}
+
 BattleScreen.prototype.end = function(did_win) {
     this.menu = [];
     this.animation_finished = [];
-    var w = 320, h = 32, y = 16*17;
-    var sprite = new BSBox((640 - w) / 2, y, w,
-			   ["Defeated Gremlin"]);
+    var sprite = this.big_msg(["Defeated Gremlin"]);
     this.animate([
 	sprite.insert_anim(),
 	pause_anim(60)
@@ -478,21 +490,30 @@ BSPlayer.prototype.do_spell_arcane = function(bs, target) {
     amt = atk_damage(4,
 		     target.get_defense(bs) - 4,
 		     bs.state.get_attack_level());
-    bs.animate(bs.anim_bolt(this, target, 'arcane', amt));
+    bs.animate([
+	bs.attack_msg([SPELL_INFO.arcane.name]),
+	bs.anim_bolt(this, target, 'arcane', amt)
+    ])
 }
 
 BSPlayer.prototype.do_spell_fire = function(bs, target) {
     amt = atk_damage(3,
 		     target.get_defense(bs),
 		     bs.state.get_attack_level());
-    bs.animate(bs.anim_bolt(this, target, 'fire', amt));
+    bs.animate([
+	bs.attack_msg([SPELL_INFO.fire.name]),
+	bs.anim_bolt(this, target, 'fire', amt)
+    ]);
 }
 
 BSPlayer.prototype.do_spell_holy = function(bs, target) {
     amt = atk_damage(12,
 		     target.get_defense(bs) - 8,
 		     bs.state.get_attack_level());
-    bs.animate(bs.anim_bolt(this, target, 'holy', amt));
+    bs.animate([
+	bs.attack_msg([SPELL_INFO.holy.name]),
+	bs.anim_bolt(this, target, 'holy', amt)
+    ]);
 }
 
 // Monster actions
