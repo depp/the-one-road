@@ -8,21 +8,14 @@ function Menu(obj, items, sprites, font, x, y, width) {
     this.width = width;
     this.selected = 0;
     this.active = true;
+    this.lines = [];
+    for (var i = 0; i < this.items.length; i++)
+	this.lines.push(this.items[i].title);
 }
 
 Menu.prototype.draw = function() {
-    this.sprites.drawBox(
-	this.x, this.y, this.width, 16 * (self.items.length + 1),
-	16, 'Box', 1)
-    for (var i = 0; i < this.items.length; i++) {
-	var item = this.items[i];
-	this.font.drawLine(this.x + 16, this.y + 8 + 16*i + 12,
-			   item.title, 1);
-    }
-    if (this.active) {
-	this.sprites.draw(this.x-2, this.y + 8 + this.selected * 16,
-			  'Hand', 1);
-    }
+    text_box(this.sprites, this.font, this.x, this.y, this.width,
+	     this.lines, this.selected);
 }
 
 Menu.prototype.keydown = function(code) {

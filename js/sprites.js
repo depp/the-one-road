@@ -113,3 +113,14 @@ Sprites.prototype.drawBox = function(x, y, w, h, edge, name, scale) {
 	y + (edge + fh * nh) * scale,
 	fw * scale, edge * scale);
 }
+
+function text_box(spr, font, x, y, w, lines, selection)
+{
+    spr.drawBox(x, y, w, 16 * (lines.length + 1), 16, 'Box', 1);
+    for (var i = 0; i < lines.length; i++) {
+	var line = lines[i];
+	font.drawLine(x + 16, y + 20 + i*16, line, 1);
+    }
+    if (selection !== undefined)
+	spr.draw(x - 2, y + 8 + selection*16, 'Hand', 1);
+}

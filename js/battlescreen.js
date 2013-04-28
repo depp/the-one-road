@@ -285,15 +285,12 @@ BattleScreen.prototype.draw = function() {
 		sp.draw(this);
 	}
     }
-    var infow = 9, infox = 640 - (infow+1)*16;
-    this.sprites.drawBox(infox, 16*17, 16*infow, 16*4,
-			 16, 'Box', 1);
-    this.font.drawLine(infox + 16, 16*17 + 20,
-		       "Health 100/100", 1);
-    this.font.drawLine(infox + 16, 16*17 + 20 + 16,
-		       "Magic 100/100", 1);
-    this.font.drawLine(infox + 16, 16*17 + 20 + 16*2,
-		       "Level 1  Potions 5", 1);
+    var infow = 9*16, infox = 640 - 16 - infow;
+    text_box(this.sprites, this.font, infox, 16*17, infow,
+	     ["Health 100/100",
+	      "Magic 100/100",
+	      "Level 1",
+	      "6 Potions"])
 }
 
 BattleScreen.prototype.keydown = function(code) {
