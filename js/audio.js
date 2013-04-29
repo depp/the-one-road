@@ -6,8 +6,11 @@ MUSIC_TRACKS = ['music/background', 'music/battle', 'music/crystal',
 		'music/death']
 
 function audio_obj(path) {
+    var obj;
     if (path in audio_files) {
 	obj = audio_files[path];
+	if (window.chrome)
+	    obj.load()
     } else {
 	obj = document.createElement('audio');
 	var src = document.createElement('source');
@@ -19,38 +22,41 @@ function audio_obj(path) {
 	    src.src = path + '.ogg';
 	}
 	obj.appendChild(src);
+	audio_files[path] = obj;
     }
-    audio_files[path] = obj;
     return obj;
 }
 
 function music_ended() {
-    this.currentTime = 0;
+    if (window.chrome)
+	this.load();
+    else
+	this.currentTime = 0;
     this.play();
 }
 
 function music_play(tracknum, loop) {
     if (music_tracknum === tracknum)
 	return;
-    if (tracknum === null) {
-	music_track.removeEventListener('ended', music_ended);
-	music_track.pause();
-	music_track = null;
-	music_tracknum = null;
-	return;
-    }
-    var obj = audio_obj(MUSIC_TRACKS[tracknum]);
-    if (obj == music_track)
-	return;
     if (music_track) {
 	music_track.removeEventListener('ended', music_ended);
 	music_track.pause();
+	if (window.chrome) {
+	    music_track.load();
+	} else {
+	    music_track.currentTime = 0;
+	}
+	music_track = null;
+	music_tracknum = null;
     }
-    if (loop)
-	obj.addEventListener('ended', music_ended);
-    obj.play();
-    music_track = obj;
-    music_tracknum = tracknum;
+    if (tracknum !== null) {
+	var obj = audio_obj(MUSIC_TRACKS[tracknum]);
+	if (loop)
+	    obj.addEventListener('ended', music_ended);
+	obj.play();
+	music_track = obj;
+	music_tracknum = tracknum;
+    }
 }
 
 function sfxPlay2() {
@@ -58,10 +64,8 @@ function sfxPlay2() {
     this.removeEventListener('canplaythrough', sfxPlay2, false)
 }
 
-var SFX_COUNTRE = 0;
 function sfxPlay(name) {
     var obj = audio_obj('sfx/' + name);
-    console.log('play ' + name + ' ' + SFX_COUNTRE++);
     if (obj.readyState < 2) {
 	obj.addEventListener('canplaythrough', sfxPlay2, false);
     } else {

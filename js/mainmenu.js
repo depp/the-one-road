@@ -9,11 +9,11 @@ function MainMenu() {
     var mw = 16 * 8;
     this.menu = new Menu(this, items, 320 - mw/2, 64, mw);
     this.frame = 0;
-
-    music_play(null, false);
 }
 
 MainMenu.prototype.update = function() {
+    if (!this.frame)
+	music_play(null, false);
     this.frame++;
     if (this.frame == 1280)
 	this.frame = 0;
