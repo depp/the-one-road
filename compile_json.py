@@ -10,6 +10,6 @@ for dirpath, dirnames, filenames in os.walk('.'):
         name = os.path.splitext(f)[0]
         json[name] = open(p, 'r').read()
 
-with open('js/static.js', 'w') as fp:
+with open('const.js', 'w') as fp:
     for n, v in sorted(json.items()):
         print('JSON_{}={};'.format(n, v.strip()), file=fp)
