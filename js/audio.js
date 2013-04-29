@@ -1,9 +1,9 @@
 var audio_files = {};
 var music_track = null;
-var sfx_file = null;
 var music_tracknum = null;
 
-MUSIC_TRACKS = ['audio/background', 'audio/battle', 'audio/crystal']
+MUSIC_TRACKS = ['music/background', 'music/battle', 'music/crystal',
+		'music/death']
 
 function audio_obj(path) {
     if (path in audio_files) {
@@ -29,11 +29,12 @@ function music_ended() {
     this.play();
 }
 
-function music_play(tracknum) {
+function music_play(tracknum, loop) {
     if (music_tracknum === tracknum)
 	return;
     if (tracknum === null) {
-	music_track.stop();
+	music_track.removeEventListener('ended', music_ended);
+	music_track.pause();
 	music_track = null;
 	music_tracknum = null;
 	return;
@@ -45,41 +46,29 @@ function music_play(tracknum) {
 	music_track.removeEventListener('ended', music_ended);
 	music_track.pause();
     }
-    obj.addEventListener('ended', music_ended);
+    if (loop)
+	obj.addEventListener('ended', music_ended);
     obj.play();
     music_track = obj;
     music_tracknum = tracknum;
 }
 
-var sfx_end = null;
-var sfx_queue = null;
-
-function audio_timer() {
-    if (sfx_end && sfx_file.currentTime >= sfx_end)
-	sfx_file.pause();
-}
-
 function sfxPlay2() {
-    var name = sfx_queue;
-    sfx_queue = null;
-    sfxPlay(name);
+    this.play();
+    this.removeEventListener('canplaythrough', sfxPlay2, false)
 }
 
+var SFX_COUNTRE = 0;
 function sfxPlay(name) {
-    return;
-    if (!sfx_file || sfx_queue) {
-	sfx_queue = name;
-	if (!sfx_file) {
-	    sfx_file = audio_obj('audio/sfx');
-	    sfx_file.addEventListener('timeupdate', audio_timer, false);
-	    sfx_file.addEventListener('canplaythrough', sfxPlay2, false);
-	}
+    var obj = audio_obj('sfx/' + name);
+    console.log('play ' + name + ' ' + SFX_COUNTRE++);
+    if (obj.readyState < 2) {
+	obj.addEventListener('canplaythrough', sfxPlay2, false);
     } else {
-	var info = JSON_sfx[name];
-	if (!sfx_file.paused)
-	    sfx_file.pause();
-	sfx_file.currentTime = info[0];
-	sfx_end = info[1];
-	sfx_file.play();
+	if (!(obj.paused || obj.ended)) {
+	    obj.currentTime = 0;
+	} else {
+	    obj.play();
+	}
     }
 }

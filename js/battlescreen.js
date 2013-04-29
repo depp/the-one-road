@@ -626,9 +626,9 @@ BattleScreen.prototype.end = function(did_win) {
 	});
     } else {
 	var sprite = this.big_msg([rand_message(MSG_BATTLELOSE)]);
+	music_play('death', false);
 	this.sprite.player.sprite = 'player_dead';
 	this.animate([
-	    sfx_anim('deathmusic'),
 	    sprite.insert_anim(),
 	    pause_anim(30)
 	]);

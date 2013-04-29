@@ -66,11 +66,11 @@ Overworld.prototype.update = function() {
     this.menu[0].hide_item(1, state.pos >= 64);
     var frac = state.pos / OVERWORLD_WIDTH;
     if (frac < 0.3)
-	music_play(0)
+	music_play(0, true)
     else if (frac > 0.4 && frac < 0.6)
-	music_play(1);
+	music_play(1, true);
     else if (frac > 0.7)
-	music_play(2);
+	music_play(2, true);
 }
 
 Overworld.prototype.draw = function() {
