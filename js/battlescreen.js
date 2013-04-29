@@ -592,8 +592,10 @@ BattleScreen.prototype.end = function(did_win) {
 	var sprite = this.big_msg([rand_message(MSG_BATTLEWIN)]);
 	var msgs = []
 	if (state.level < MAX_LEVEL && this.encounter.xp) {
+	    var xp = DIFFICULTY_INFO[state.difficulty].xp * this.encounter.xp;
+	    xp = Math.round(xp);
 	    var curlevel = state.level;
-	    state.xp += this.encounter.xp;
+	    state.xp += xp;
 	    while (state.level < MAX_LEVEL &&
 		   state.xp >= level_xp(state.level)) {
 		state.xp -= level_xp(state.level);
@@ -601,7 +603,7 @@ BattleScreen.prototype.end = function(did_win) {
 	    }
 	    if (state.level == MAX_LEVEL)
 		state.xp = 0;
-	    var text = '+' + this.encounter.xp + ' XP';
+	    var text = '+' + xp + ' XP';
 	    if (state.level > curlevel) {
 		state.hp += level_hp(state.level) - level_hp(curlevel);
 		state.mp += level_mp(state.level) - level_mp(curlevel);
@@ -610,8 +612,10 @@ BattleScreen.prototype.end = function(did_win) {
 	    msgs.push(text);
 	}
 	if (this.encounter.gp) {
-	    msgs.push('Got ' + this.encounter.gp + ' GP.');
-	    state.gp += this.encounter.gp;
+	    var gp = DIFFICULTY_INFO[state.difficulty].gp * this.encounter.gp;
+	    gp = Math.round(gp);
+	    msgs.push('Got ' + gp + ' GP.');
+	    state.gp += gp;
 	}
 	var w = 320, h = 32, y = 16*19+8;
 	var sprite2 = new BSBox((640 - w) / 2, y, w, msgs, 'left');	

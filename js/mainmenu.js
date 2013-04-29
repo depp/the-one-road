@@ -3,8 +3,12 @@ function MainMenu() {
     this.background.src = 'img/overworld.png';
 
     var items = [
-	{ 'title': 'New game',
-	  'action': this.begin }
+	{ 'title': 'Easy',
+	  'action': function() { this.begin(0); } },
+	{ 'title': 'Hard',
+	  'action': function() { this.begin(1); } },
+	{ 'title': 'Impossible',
+	  'action': function() { this.begin(2); } }
     ];
     var mw = 16 * 8;
     this.menu = new Menu(this, items, 320 - mw/2, 64, mw);
@@ -37,7 +41,7 @@ MainMenu.prototype.draw = function() {
     font.drawLine(16, 320, 'Ludum Dare, April 2013', 1);
 }
 
-MainMenu.prototype.begin = function() {
-    state = new State();
+MainMenu.prototype.begin = function(difficulty) {
+    state = new State(difficulty);
     main.screen = new Transition(this, new Overworld(), false);
 }
