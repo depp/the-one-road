@@ -37,33 +37,40 @@ SWORD_INFO = [
     },
     {
 	'name': 'Wooden Sword',
-	'gp': 15
+	'gp': 15,
+	'sprite': 'swordb'
     },
     {
 	'name': 'Rusty Sword',
 	'gp': 40,
+	'sprite': 'swordc'
     },
     {
 	'name': 'Excalibur',
-	'gp': 160
+	'gp': 160,
+	'sprite': 'sword',
     }
 ]
 
 ARMOR_INFO = [
     {
-	'name': 'Cloth'
+	'name': 'Cloth',
+	'sprite': 'player_battle'
     },
     {
 	'name': 'Leather Armor',
-	'gp': 20
+	'gp': 20,
+	'sprite': 'player_armor1'
     },
     {
 	'name': 'Chainmail',
-	'gp': 50
+	'gp': 50,
+	'sprite': 'player_armor2'
     },
     {
 	'name': 'Iron Armor',
-	'gp': 200
+	'gp': 200,
+	'sprite': 'player_armor3'
     }
 ]
 
@@ -275,7 +282,7 @@ function fight(preset, encounter) {
 	console.log('no such encounter');
 	return;
     }
-    state = new State();
+    state = new State(1);
     var p = STATE_PRESETS[preset];
     for (var key in p) {
 	var val = p[key];

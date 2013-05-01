@@ -176,12 +176,42 @@ function BSPlayer(x, y) {
     this.x = x;
     this.y = y;
     this.layer = 0;
-    this.sprite = 'player_battle';
     this.nx = 8;
     this.ny = 0;
+    this.swstate = 0;
 }
 
-BSPlayer.prototype = new BSImage();
+BSPlayer.prototype = new BSSprite();
+
+BSPlayer.prototype.draw = function() {
+    var armor, sword;
+    if (state.hp == 0) {
+	armor = 'player_dead';
+	sword = null;
+    } else if (POST_COMPO) {
+	armor = ARMOR_INFO[state.armor].sprite;
+	sword = SWORD_INFO[state.sword].sprite;
+    } else {
+	armor = 'player_battle';
+	sword = null;
+    }
+    drawSprite(this.x, this.y, armor, 1);
+    if (sword) {
+	if (this.swstate == 0) {
+	    drawSprite(this.x-18, this.y+2, sword + '_1', 1);
+	} else {
+	    drawSprite(this.x-20, this.y+10, sword + '_2', 1);
+	}
+    }
+}
+
+BSPlayer.prototype.attack_anim = function(swstate) {
+    var spr = this;
+    return function(frame) {
+	spr.swstate = swstate;
+	return true;
+    };
+}
 
 function BSMonster(x, y, type, row) {
     this.info = MONSTER_INFO[type];
@@ -196,6 +226,10 @@ function BSMonster(x, y, type, row) {
 }
 
 BSMonster.prototype = new BSImage();
+
+BSMonster.prototype.attack_anim = function(swstate) {
+    return null;
+}
 
 // Battle Screen class
 
@@ -356,10 +390,12 @@ BattleScreen.prototype.do_attack1 = function(actor, target, amt) {
     tx += (ax < tx) ? -40 : +40;
     return [
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
+	actor.attack_anim(1),
 	sfx_anim('hit'),
 	parallel_anim([target.damage(this, amt)]),
 	pause_anim(10),
-	actor.interp_anim(tx, ty, ax, ay, 10)
+	actor.interp_anim(tx, ty, ax, ay, 10),
+	actor.attack_anim(0)
     ]
 }
 
@@ -632,7 +668,6 @@ BattleScreen.prototype.end = function(did_win) {
     } else {
 	var sprite = this.big_msg([rand_message(MSG_BATTLELOSE)]);
 	music_play(3, false);
-	this.sprite.player.sprite = 'player_dead';
 	this.animate([
 	    sprite.insert_anim(),
 	    pause_anim(30)
