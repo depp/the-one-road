@@ -499,7 +499,7 @@ BattleScreen.prototype.act_item1 = function(name) {
     var both = info.hp && info.mp;
 
     if (info.hp) {
-	state.hp = Math.min(level_hp(state.level), info.hp);
+	state.hp = Math.min(level_hp(state.level), state.hp + info.hp);
 	anim.push(parallel_anim([
 	    player.number_anim(
 		0, both ? -12 : 0,
@@ -510,7 +510,7 @@ BattleScreen.prototype.act_item1 = function(name) {
 	]));
     }
     if (info.mp) {
-	state.mp = Math.min(level_mp(state.level), info.mp);
+	state.mp = Math.min(level_mp(state.level), state.mp + info.mp);
 	anim.push(parallel_anim([
 	    pause_anim(both ? 5 : 0),
 	    player.number_anim(
