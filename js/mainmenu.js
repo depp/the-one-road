@@ -1,3 +1,5 @@
+var POST_COMPO = false;
+
 function MainMenu() {
     this.background = new Image();
     this.background.src = 'img/overworld.png';
@@ -8,11 +10,20 @@ function MainMenu() {
 	{ 'title': 'Hard',
 	  'action': function() { this.begin(1); } },
 	{ 'title': 'Impossible',
-	  'action': function() { this.begin(2); } }
+	  'action': function() { this.begin(2); } },
+	{ 'title': '',
+	  'action': function() { this.post_compo(!POST_COMPO); } }
     ];
-    var mw = 16 * 8;
+    var mw = 16 * 10;
     this.menu = new Menu(this, items, 320 - mw/2, 64, mw);
     this.frame = 0;
+    this.post_compo(POST_COMPO);
+}
+
+MainMenu.prototype.post_compo = function(value) {
+    POST_COMPO = value;
+    this.menu.set_item_name(
+	3, 'Version: ' + (POST_COMPO ? 'Post-Compo' : 'Compo'));
 }
 
 MainMenu.prototype.update = function() {
