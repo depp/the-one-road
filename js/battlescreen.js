@@ -346,7 +346,8 @@ BattleScreen.prototype.keydown = function(code) {
 BattleScreen.prototype.keyup = function(code) { }
 
 BattleScreen.prototype.menu_pop = function() {
-    this.menu.pop();
+    if (this.menu.length > 1)
+	this.menu.pop();
 }
 
 BattleScreen.prototype.do_attack1 = function(actor, target, amt) {
