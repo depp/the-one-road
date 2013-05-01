@@ -387,11 +387,18 @@ BattleScreen.prototype.menu_pop = function() {
 BattleScreen.prototype.do_attack1 = function(actor, target, amt) {
     var ax = actor.x, ay = actor.y;
     var tx = target.x, ty = target.y;
+    var sparks = POST_COMPO && amt > 20 ? new BSEffect(tx, ty+8, null) : null;
     tx += (ax < tx) ? -40 : +40;
     return [
 	actor.interp_anim(ax, ay, tx, ty, 30, 'jump,smooth'),
 	actor.attack_anim(1),
 	sfx_anim('hit'),
+	sparks ? parallel_anim([
+	    sparks.insert_anim(),
+	    sparks.sprite_anim(amt > 50 ? 4 : 2, 5,
+			       ['sparks_1', 'sparks_2']),
+	    sparks.remove_anim()
+	]) : null,
 	parallel_anim([target.damage(this, amt)]),
 	pause_anim(10),
 	actor.interp_anim(tx, ty, ax, ay, 10),
