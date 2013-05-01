@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <title>The One Road: Hints</title>
+  <meta charset='utf-8'>
+</head>
+<body>
+  <h1>The One Road: Hints</h1>
+  <ul>
+    <li>You can’t just run through the game.
+    <li>Encounters are based on location.
+    <li>You have to buy a sword or a spell before you face a gremlin
+      (if your attack power isn’t higher than 3, you won’t damage it).
+    <li>Potions are cheap.  The humble potato is even cheaper, but by
+      the time you get it you don’t need it—unless you are on
+      “impossible” difficulty, in which case, buy potatoes.
+  </ul>
+  <h2>Known bugs</h2>
+  <ul>
+    <li>If you use an item outside of battle, you can raise your HP or
+      MP above the maximum.  I’m not going to fix this one.
+  </ul>
+  <h2>Console tricks</h2>
+  <p>Here are some things you can do in the Javascript console:</p>
+  <pre>
+    state.hp = 500;
+    state.gp = 1000;
+    fight('D', 'boss'); // fight the boss at level 12
+    main.screen.end(true); // win current battle
+  </pre>
+  <p>The <tt>fight()</tt> command takes a character preset and an
+    encounter name.  The four presets are A, B, C, and D.  The
+    encounter names are rat1, rat2, gremlin1, gremlin2, king1, king2,
+    king3, and boss.  Using the <tt>fight()</tt> command will
+    overwrite your current game.</p>
+</body>
+</html>
