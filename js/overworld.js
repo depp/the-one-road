@@ -391,6 +391,10 @@ StatMenu.prototype.do_item1 = function(name) {
     var info = ITEM_INFO[name];
     state.hp += info.hp || 0;
     state.mp += info.mp || 0;
+    if (POST_COMPO) {
+	state.hp = Math.min(state.hp, level_hp(state.level));
+	state.mp = Math.min(state.mp, level_mp(state.level));
+    }
     var menu = this.menu[this.menu.length-1];
     var sel = menu.idxs[menu.selected];
     if (--state.items[name]) {
