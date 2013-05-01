@@ -224,7 +224,7 @@ ENCOUNTER_INFO = {
 var DIFFICULTY_INFO = [
     { 'plevel': 15, 'mlevel': 5, 'encounter': 180, 'gp': 2, 'xp': 2 },
     { 'plevel': 10, 'mlevel': 5, 'encounter': 120, 'gp': 1.5, 'xp': 1.5 },
-    { 'plevel': 5,  'mlevel': 5, 'encounter': 80 }
+    { 'plevel': 5,  'mlevel': 5, 'encounter': 80, 'gp': 1, 'xp': 1 }
 ]
 
 function State(difficulty) {
