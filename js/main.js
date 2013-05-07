@@ -7,7 +7,34 @@ main.cxt = main.canvas.getContext('2d');
 main.canvas.width = 640;
 main.canvas.height = 360;
 document.body.appendChild(main.canvas);
-main.intervalid = null;
+main.handleId = null;
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['webkit', 'moz'];
+    for (var i = 0; i < vendors.length && !window.requestAnimationFrame; i++) {
+	var v = vendors[i];
+	window.requestAnimationFrame = window[v+'RequestAnimationFrame'];
+	window.cancelAnimationFrame = window[v+'CancelAnimationFrame'] ||
+	    window[v+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame) {
+	window.requestAnimationFrame = function(callback, element) {
+	    var curTime = new Date().getTime();
+	    var timeToCall = Math.max(0, 16 - (curTime - lastTime));
+	    var id = window.setTimeout(
+		function() { callback(curTime + timeToCall); },
+		timeToCall);
+	    lastTCime = curTime + timeToCall;
+	    return id;
+	};
+
+	window.cancelAnimationFrame = function(id) {
+	    clearTimeout(id);
+	}
+    }
+})();
 
 function isObjectEmpty(obj) {
     for (var prop in obj)
@@ -22,6 +49,7 @@ main.newGame = function() {
 }
 
 main.gameLoop = function() {
+    window.requestAnimationFrame(main.gameLoop);
     var now = Date.now();
     var delta = now - main.frametime;
     var nframes = Math.floor(delta * (60 / 1000));
@@ -42,17 +70,18 @@ main.gameLoop = function() {
 }
 
 main.start = function() {
-    if (main.intervalid !== null)
+    if (main.handleId !== null)
 	return;
+    console.log('start');
     main.frametime = Date.now();
-    main.intervalid = setInterval(main.gameLoop, 5);
+    main.handleId = window.requestAnimationFrame(main.gameLoop);
 }
 
 main.stop = function() {
-    if (main.intervalid === null)
+    if (main.handleId === null)
 	return;
-    clearInterval(main.intervalid);
-    main.intervalid = null;
+    window.cancelAnimationFrame(main.handleId);
+    main.handleId = null;
 }
 
 var KEYS = {
@@ -67,7 +96,7 @@ var KEYS = {
 
 addEventListener('keydown', function (e) {
     var key = KEYS[e.keyCode];
-    if (main.intervalid !== null && key) {
+    if (main.handleId !== null && key) {
 	main.screen.keydown(key);
 	e.preventDefault();
 	return false;
@@ -76,7 +105,7 @@ addEventListener('keydown', function (e) {
 
 addEventListener('keyup', function (e) {
     var key = KEYS[e.keyCode];
-    if (main.intervalid !== null && key) {
+    if (main.handleId !== null && key) {
 	main.screen.keyup(key);
 	e.preventDefault();
     }
